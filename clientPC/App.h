@@ -4,9 +4,10 @@
 class App
 {
 public:
-	CURLWrapper* m_CURL;
-
 	void init();
 	void tick();
+
+private:
+	CURLWrapper* m_CURL;
 };
 
