@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿
+#include <iostream>
 #include <cpprest/http_listener.h>
 
 using namespace std;
@@ -7,11 +8,29 @@ using namespace web::http::experimental::listener;
 
 int main() {
 	http_listener listener(U("http://localhost:7890"));
-	listener.open().then([&listener]() {cout << (U("\n start \n")); }).wait();
-	listener.support(methods::GET, [](http_request req) {
+	listener.open().then([&listener]() {
+        std::cout << (U("\n start \n")); 
+    }).wait();
+	
+    listener.support(methods::GET, [](http_request req) {
 		req.reply(status_codes::OK, U("hello world!"));
 	});
-	while (true);
+	
+    listener.support(methods::POST, [](http_request req) {
+        std::cout << "handle_post request" << std::endl;
+
+        req.extract_json().then([req](web::json::value body)
+        {
+            wcout << body.serialize() << endl;
+            req.reply(status_codes::OK, body);
+        });
+
+
+
+    });
+    
+    while (true);
 	listener.close();
 	return 0;
 }
+
