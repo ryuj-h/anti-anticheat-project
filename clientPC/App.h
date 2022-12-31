@@ -1,11 +1,11 @@
 #pragma once
+#include "CURLWrapper.hpp"
+
 class App
 {
 public:
-	App()
-	{
+	CURLWrapper* m_CURL;
 
-	}
 	void init();
 	void tick();
 };
