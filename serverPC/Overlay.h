@@ -9,12 +9,13 @@
 #include <atlconv.h>
 #include <atlbase.h>
 
+#include "SectionDef.h"
 
 class Overlay
 {
 public:
 	void init();
-	void draw();
+	void draw(const SharedSection& drawsection);
 
 	void DrawString(std::string str, float fontSize, float x, float y, float r, float g, float b, float a);
 	void DrawBox(float x, float y, float width, float height, float thickness, float r, float g, float b, float a, bool filled);
@@ -22,6 +23,8 @@ public:
 	void DrawCircle(float x, float y, float radius, float thickness, float r, float g, float b, float a, bool filled);
 	void DrawEllipse(float x, float y, float width, float height, float thickness, float r, float g, float b, float a, bool filled);
 	void Draw_Edge_String(std::string str, float fontSize, float x, float y, float r, float g, float b, float a);
+
+	int aa = 0;
 
 private:
 	ID2D1Factory* factory;

@@ -32,6 +32,7 @@ void Overlay::init()
 	hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOPMOST,//WS_EX_LAYERED,
 		wc.lpszClassName, L"OverlayWindow", WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 		NULL, NULL, wc.hInstance, NULL);
+	
 	HRGN rgn;
 	DWM_BLURBEHIND blur;
 	rgn = CreateRectRgn(0, 0, 1, 1);
@@ -39,10 +40,10 @@ void Overlay::init()
 	blur.fEnable = true;
 	blur.fTransitionOnMaximized = true;
 	blur.hRgnBlur = rgn;
-
+	
 	DwmEnableBlurBehindWindow(hwnd, &blur);
-
-	SetWindowPos(hwnd, HWND_TOP, 0, 0, GetSystemMetrics(SM_CXSCREEN) - 2, GetSystemMetrics(SM_CYSCREEN) - 3, SWP_NOACTIVATE);
+	
+	SetWindowPos(hwnd, HWND_TOP, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SWP_NOACTIVATE);
 
 	HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &factory);
 	if (!SUCCEEDED(hr)){
@@ -72,7 +73,9 @@ void Overlay::init()
 	ShowWindow(hwnd, 1);
 }
 
-void Overlay::draw()
+
+
+void Overlay::draw(const SharedSection& drawsection)
 {
 	MSG message;
 	message.message = WM_NULL;
@@ -98,7 +101,16 @@ void Overlay::draw()
 		target->BeginDraw();
 		target->Clear(D2D1::ColorF(0, 0, 0, 0));
 
-		DrawString("Hello world!", 12.f, 100, 100, 1.f, 1.f, 1.f, 1.f);
+		DrawString("Hello world!", 12.f, aa, 100, 1.f, 1.f, 1.f, 1.f);
+		if (aa > 1920)
+			aa = 0;
+
+		DrawLine(0, 0, 100, 100, 1, 1, 0, 0, 1.f);
+		for (int i = 0; i < drawsection.linenum; i++) {
+			//cout << drawsection.drawline[i].a << endl;
+			DrawLine(drawsection.drawline[i].x1, drawsection.drawline[i].y1, drawsection.drawline[i].x2, drawsection.drawline[i].y2, (float)drawsection.drawline[i].thickness,
+				(float)drawsection.drawline[i].r, (float)drawsection.drawline[i].g, (float)drawsection.drawline[i].b, (float)drawsection.drawline[i].a);//(float)drawsection.drawline[i].a);
+		}
 
 		target->EndDraw();
 	}
