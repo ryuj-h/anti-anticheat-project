@@ -84,8 +84,8 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 int main()
 {
     app = new App();
-    app->init();
+    app->Init();
     while (true)
-        app->tick();
+        app->Tick();
 }
 #endif

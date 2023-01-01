@@ -32,5 +32,17 @@
     <ClInclude Include="SectionDef.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="hookctrl.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="offsets.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="V3.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="def.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

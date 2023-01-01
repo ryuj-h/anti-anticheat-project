@@ -101,11 +101,11 @@ void Overlay::draw(const SharedSection& drawsection)
 		target->BeginDraw();
 		target->Clear(D2D1::ColorF(0, 0, 0, 0));
 
-		DrawString("Hello world!", 12.f, aa, 100, 1.f, 1.f, 1.f, 1.f);
+		//DrawString("Hello world!", 12.f, aa, 100, 1.f, 1.f, 1.f, 1.f);
 		if (aa > 1920)
 			aa = 0;
 
-		DrawLine(0, 0, 100, 100, 1, 1, 0, 0, 1.f);
+		//DrawLine(0, 0, 100, 100, 1, 1, 0, 0, 1.f);
 		for (int i = 0; i < drawsection.linenum; i++) {
 			//cout << drawsection.drawline[i].a << endl;
 			DrawLine(drawsection.drawline[i].x1, drawsection.drawline[i].y1, drawsection.drawline[i].x2, drawsection.drawline[i].y2, (float)drawsection.drawline[i].thickness,

@@ -33,20 +33,20 @@ void handle_post(http_request request)
            // std::cout << "parse json data";
             utility::string_t jsonval = v.serialize();
             //wcout << jsonval;
-            auto status = v.at(U("status")).as_string();
+            //auto status = v.at(U("status")).as_string();
 
-            auto lines = v.at(U("lines")).as_array();
+            auto lines = v.at(U("ln")).as_array();
 
             for (int i = 0; i < lines.size(); i++){
-                float x1 = lines[i].at(U("x1")).as_double();
-                float y1 = lines[i].at(U("y1")).as_double();
-                float x2 = lines[i].at(U("x2")).as_double();
-                float y2 = lines[i].at(U("y2")).as_double();
-                float thickness = lines[i].at(U("thickness")).as_double();
-                float r = lines[i].at(U("r")).as_double();
-                float g = lines[i].at(U("g")).as_double();
-                float b = lines[i].at(U("b")).as_double();
-                float a = lines[i].at(U("a")).as_double();
+                float x1 = lines[i].at(U("x1")).as_integer();
+                float y1 = lines[i].at(U("y1")).as_integer();
+                float x2 = lines[i].at(U("x2")).as_integer();
+                float y2 = lines[i].at(U("y2")).as_integer();
+                float thickness = lines[i].at(U("th")).as_integer();
+                float r = lines[i].at(U("r")).as_integer();
+                float g = lines[i].at(U("g")).as_integer();
+                float b = lines[i].at(U("b")).as_integer();
+                float a = lines[i].at(U("a")).as_integer();
                 
                 drawsection.drawline[i].x1 = x1;
                 drawsection.drawline[i].y1 = y1;
