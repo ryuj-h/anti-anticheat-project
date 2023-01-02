@@ -19,20 +19,18 @@ void App::Init() {
 
 	InitDecrypt();
 	UpdatePtr();
-
-	g_gnames = FindGnames();
+	FindGnames();
 	PrintPtr();
 	CatchNames();
-
 }
+
 
 void App::Tick()
 {
 	json data;
-	//data["status"] = std::string("Hello");
 	InitDrawSection();
 
-	MainTick();
+	MainTick(data);
 
 	data["ln"] = json::array();//lines
 	for (int i = 0; i < drawsection.linenum; i++) {
@@ -57,6 +55,7 @@ void App::Tick()
 
 void App::InitDrawSection()
 {
+	drawsection.playernum = 0;
 	drawsection.drawboxnum = 0;
 	drawsection.linenum = 0;
 	drawsection.stringnum = 0;
@@ -191,6 +190,7 @@ uint64_t App::FindGnames()
 			/*&& */
 			GetNameFromIdUsingGName(gnames, 3) == std::string("BoolProperty"))
 		{
+			g_gnames = gnames;
 			return gnames;
 			break;
 		}
@@ -199,10 +199,12 @@ uint64_t App::FindGnames()
 			/*&& */
 			GetNameFromIdUsingGName(gnames, 3) == std::string("BoolProperty"))
 		{
+			g_gnames = gnames;
 			return gnames;
 			break;
 		}
 	}
+	g_gnames = gnames;
 	return gnames;
 }
 
@@ -523,11 +525,13 @@ void App::DrawSkeleton_manual(uint64_t mesh, bool isvisible)
 
 
 
-void App::Playerloop()
+void App::Playerloop(json& data)
 {
-	for (auto entity : Players){
-		if (entity == g_savedaPawn)
-		{
+
+	data["Players"] = json::array();//players;
+
+	for (auto entity : Players) {
+		if (entity == g_savedaPawn){
 			//continue;
 		}
 
@@ -545,100 +549,105 @@ void App::Playerloop()
 		Vector3 wts = WorldToScreen(position);
 		Vector3 wts2 = WorldToScreen(position2);
 
-		//DrawLine(wts.x, wts.y, wts2.x, wts2.y, 1, 1, 1, 1, 1);
-		//cout << wts.x << " : " << wts.y << endl;
 		uint64_t mesh;
 		dr->RPM(g_pid, &mesh, entity + oMesh, 8);
 		if (mesh < 0xfffff || mesh > 0xfffffffffffffff)
 			continue;
 
-
 		float distance = position.Distance(CameraCache.POV.Location) / 100.0f;
 
-		if (distance <= 100.f)
-		{
-			Vector3 fforepos = GetBoneWithRotation(mesh, fforehead);
-			Vector3 fHeadpos = GetBoneWithRotation(mesh, fHead);
-			Vector3 fneck_01pos = GetBoneWithRotation(mesh, fneck_01);
-			
+		Vector3 fforepos = GetBoneWithRotation(mesh, fforehead);
+		Vector3 fHeadpos = GetBoneWithRotation(mesh, fHead);
+		Vector3 fneck_01pos = GetBoneWithRotation(mesh, fneck_01);
 
-			Vector3 fupperarm_r_pos = GetBoneWithRotation(mesh, fupperarm_r);
-			Vector3 flowerarm_r_pos = GetBoneWithRotation(mesh, flowerarm_r);
-			Vector3 fhand_r_pos = GetBoneWithRotation(mesh, fhand_r);
+		Vector3 fupperarm_r_pos = GetBoneWithRotation(mesh, fupperarm_r);
+		Vector3 flowerarm_r_pos = GetBoneWithRotation(mesh, flowerarm_r);
+		Vector3 fhand_r_pos = GetBoneWithRotation(mesh, fhand_r);
 
-			Vector3 fupperarm_l_pos = GetBoneWithRotation(mesh, fupperarm_l);
-			Vector3 flowerarm_l_pos = GetBoneWithRotation(mesh, flowerarm_l);
-			Vector3 fhand_l_pos = GetBoneWithRotation(mesh, fhand_l);
-			
-			
-			Vector3 fpelvis_pos = GetBoneWithRotation(mesh, fpelvis);
-			Vector3 fspine_02_pos = GetBoneWithRotation(mesh, fspine_02);
-			Vector3 fspine_01_pos = GetBoneWithRotation(mesh, fspine_01);
+		Vector3 fupperarm_l_pos = GetBoneWithRotation(mesh, fupperarm_l);
+		Vector3 flowerarm_l_pos = GetBoneWithRotation(mesh, flowerarm_l);
+		Vector3 fhand_l_pos = GetBoneWithRotation(mesh, fhand_l);
 
 
-			Vector3 fthigh_r_pos = GetBoneWithRotation(mesh, fthigh_r);
-			Vector3 fcalf_r_pos = GetBoneWithRotation(mesh, fcalf_r);
-			Vector3 ffoot_r_pos = GetBoneWithRotation(mesh, ffoot_r);
+		Vector3 fpelvis_pos = GetBoneWithRotation(mesh, fpelvis);
+		Vector3 fspine_02_pos = GetBoneWithRotation(mesh, fspine_02);
+		Vector3 fspine_01_pos = GetBoneWithRotation(mesh, fspine_01);
 
 
-			Vector3 fthigh_l_pos = GetBoneWithRotation(mesh, fthigh_l);
-			Vector3 fcalf_l_pos = GetBoneWithRotation(mesh, fcalf_l);
-			Vector3 ffoot_l_pos = GetBoneWithRotation(mesh, ffoot_l);
-
-			fforepos = WorldToScreen(fforepos);
-			fHeadpos = WorldToScreen(fHeadpos);
-			fneck_01pos = WorldToScreen(fneck_01pos);
-
-			fupperarm_r_pos = WorldToScreen(fupperarm_r_pos);
-			flowerarm_r_pos = WorldToScreen(flowerarm_r_pos);
-			fhand_r_pos = WorldToScreen(fhand_r_pos);
-
-			fupperarm_l_pos = WorldToScreen(fupperarm_l_pos);
-			flowerarm_l_pos = WorldToScreen(flowerarm_l_pos);
-			fhand_l_pos = WorldToScreen(fhand_l_pos);
-
-			fspine_02_pos = WorldToScreen(fspine_02_pos);
-			fspine_01_pos = WorldToScreen(fspine_01_pos);
-			fpelvis_pos = WorldToScreen(fpelvis_pos);
-
-			fthigh_r_pos = WorldToScreen(fthigh_r_pos);
-			fcalf_r_pos = WorldToScreen(fcalf_r_pos);
-			ffoot_r_pos = WorldToScreen(ffoot_r_pos);
-
-			fthigh_l_pos = WorldToScreen(fthigh_l_pos);
-			fcalf_l_pos = WorldToScreen(fcalf_l_pos);
-			ffoot_l_pos = WorldToScreen(ffoot_l_pos);
+		Vector3 fthigh_r_pos = GetBoneWithRotation(mesh, fthigh_r);
+		Vector3 fcalf_r_pos = GetBoneWithRotation(mesh, fcalf_r);
+		Vector3 ffoot_r_pos = GetBoneWithRotation(mesh, ffoot_r);
 
 
-			DrawLine(fforepos.x, fforepos.y, wts.x, wts.y, 3, 1, 1, 1, 1);
+		Vector3 fthigh_l_pos = GetBoneWithRotation(mesh, fthigh_l);
+		Vector3 fcalf_l_pos = GetBoneWithRotation(mesh, fcalf_l);
+		Vector3 ffoot_l_pos = GetBoneWithRotation(mesh, ffoot_l);
 
-			//continue;
+		fforepos = WorldToScreen(fforepos);
+		fHeadpos = WorldToScreen(fHeadpos);
+		fneck_01pos = WorldToScreen(fneck_01pos);
 
-			DrawLine(fforepos.x, fforepos.y, fHeadpos.x, fHeadpos.y, 3, 1, 1, 1, 1);
-			DrawLine(fHeadpos.x, fHeadpos.y, fneck_01pos.x, fneck_01pos.y, 3, 1, 1, 1, 1);
+		fupperarm_r_pos = WorldToScreen(fupperarm_r_pos);
+		flowerarm_r_pos = WorldToScreen(flowerarm_r_pos);
+		fhand_r_pos = WorldToScreen(fhand_r_pos);
 
-			DrawLine(fneck_01pos.x, fneck_01pos.y, fupperarm_r_pos.x, fupperarm_r_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(fupperarm_r_pos.x, fupperarm_r_pos.y, flowerarm_r_pos.x, flowerarm_r_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(flowerarm_r_pos.x, flowerarm_r_pos.y, fhand_r_pos.x, fhand_r_pos.y, 3, 1, 1, 1, 1);
+		fupperarm_l_pos = WorldToScreen(fupperarm_l_pos);
+		flowerarm_l_pos = WorldToScreen(flowerarm_l_pos);
+		fhand_l_pos = WorldToScreen(fhand_l_pos);
 
-			DrawLine(fneck_01pos.x, fneck_01pos.y, fupperarm_l_pos.x, fupperarm_l_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(fupperarm_l_pos.x, fupperarm_l_pos.y, flowerarm_l_pos.x, flowerarm_l_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(flowerarm_l_pos.x, flowerarm_l_pos.y, fhand_l_pos.x, fhand_l_pos.y, 3, 1, 1, 1, 1);
+		fspine_02_pos = WorldToScreen(fspine_02_pos);
+		fspine_01_pos = WorldToScreen(fspine_01_pos);
+		fpelvis_pos = WorldToScreen(fpelvis_pos);
 
-			DrawLine(fneck_01pos.x, fneck_01pos.y, fspine_02_pos.x, fspine_02_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(fspine_02_pos.x, fspine_02_pos.y, fspine_01_pos.x, fspine_01_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(fspine_01_pos.x, fspine_01_pos.y, fpelvis_pos.x, fpelvis_pos.y, 3, 1, 1, 1, 1);
+		fthigh_r_pos = WorldToScreen(fthigh_r_pos);
+		fcalf_r_pos = WorldToScreen(fcalf_r_pos);
+		ffoot_r_pos = WorldToScreen(ffoot_r_pos);
 
-			DrawLine(fpelvis_pos.x, fpelvis_pos.y, fthigh_r_pos.x, fthigh_r_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(fthigh_r_pos.x, fthigh_r_pos.y, fcalf_r_pos.x, fcalf_r_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(fcalf_r_pos.x, fcalf_r_pos.y, ffoot_r_pos.x, ffoot_r_pos.y, 3, 1, 1, 1, 1);
+		fthigh_l_pos = WorldToScreen(fthigh_l_pos);
+		fcalf_l_pos = WorldToScreen(fcalf_l_pos);
+		ffoot_l_pos = WorldToScreen(ffoot_l_pos);
 
-			DrawLine(fpelvis_pos.x, fpelvis_pos.y, fthigh_l_pos.x, fthigh_l_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(fthigh_l_pos.x, fthigh_l_pos.y, fcalf_l_pos.x, fcalf_l_pos.y, 3, 1, 1, 1, 1);
-			DrawLine(fcalf_l_pos.x, fcalf_l_pos.y, ffoot_l_pos.x, ffoot_l_pos.y, 3, 1, 1, 1, 1);
+		drawsection.playernum++;
+	
 
-		}
-
+		data["Players"].emplace_back(json::object({
+				{"15x", (int)fforepos.x},
+				{"15y", (int)fforepos.y},
+				{"6x", (int)fHeadpos.x},
+				{"6y", (int)fHeadpos.y},
+				{"5x", (int)fneck_01pos.x},
+				{"5y", (int)fneck_01pos.y},
+				{"115x", (int)fupperarm_r_pos.x},
+				{"115y", (int)fupperarm_r_pos.y},
+				{"116x", (int)flowerarm_r_pos.x},
+				{"116y", (int)flowerarm_r_pos.y},
+				{"117x", (int)fhand_r_pos.x},
+				{"117y", (int)fhand_r_pos.y},
+				{"88x", (int)fupperarm_l_pos.x},
+				{"88y", (int)fupperarm_l_pos.y},
+				{"89x", (int)flowerarm_l_pos.x},
+				{"89y", (int)flowerarm_l_pos.y},
+				{"90x", (int)fhand_l_pos.x},
+				{"90y", (int)fhand_l_pos.y},
+				{"1x", (int)fpelvis_pos.x},
+				{"1y", (int)fpelvis_pos.y},
+				{"3x", (int)fspine_02_pos.x},
+				{"3y", (int)fspine_02_pos.y},
+				{"2x", (int)fspine_01_pos.x},
+				{"2y", (int)fspine_01_pos.y},
+				{"174x", (int)fthigh_r_pos.x},
+				{"174y", (int)fthigh_r_pos.y},
+				{"175x", (int)fcalf_r_pos.x},
+				{"175y", (int)fcalf_r_pos.y},
+				{"176x", (int)ffoot_r_pos.x},
+				{"176y", (int)ffoot_r_pos.y},
+				{"168x", (int)fthigh_l_pos.x},
+				{"168y", (int)fthigh_l_pos.y},
+				{"169x", (int)fcalf_l_pos.x},
+				{"169y", (int)fcalf_l_pos.y},
+				{"170x", (int)ffoot_l_pos.x},
+				{"170y", (int)ffoot_l_pos.y}
+			}));
 
 
 		//DrawSkeleton_manual(mesh, false);
@@ -646,25 +655,15 @@ void App::Playerloop()
 }
 
 
-void App::MainTick()
+void App::MainTick(json &data)
 {
-	//int FPS = 240;
-	//auto time_between_frames = std::chrono::microseconds(std::chrono::seconds(1)) / FPS;
-	//auto target_tp = std::chrono::steady_clock::now();
-
-
-	//target_tp += time_between_frames;
-	//std::this_thread::sleep_until(target_tp);
 	fps++;
 	SCenter.x = s_width / 2;
 	SCenter.y = s_height / 2;
 	SCenter.z = 0;
 
-
 	uint64_t t = GetTickCount64();
-	if (t - lastcheck > 1000)
-	{
-		cout <<dec << fps << endl;
+	if (t - lastcheck > 1000){
 		fps = 0;
 		UpdatePtr();
 		snapShotPlayers();
@@ -672,7 +671,7 @@ void App::MainTick()
 	}
 
 	GetCameraCache();
-	Playerloop();
+	Playerloop(data);
 }
 
 

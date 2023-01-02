@@ -41,8 +41,8 @@ public:
 	Vector3 GetBoneWithRotation(uint64_t mesh, int id);
 	void skel_draw(Vector3 p1, Vector3 c1, bool isvisible);
 	void DrawSkeleton_manual(uint64_t mesh, bool isvisible);
-	void Playerloop();
-	void MainTick();
+	void Playerloop(json& data);
+	void MainTick(json& data);
 
 	void DrawString(std::string str, float fontSize, float x, float y, float r, float g, float b, float a);
 	void DrawBox(float x, float y, float width, float height, float thickness, float r, float g, float b, float a, bool filled);

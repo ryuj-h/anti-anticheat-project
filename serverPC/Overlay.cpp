@@ -1,4 +1,5 @@
 #include "Overlay.h"
+#include "V3.h"
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dwmapi.lib")
@@ -74,8 +75,11 @@ void Overlay::init()
 }
 
 
+void Overlay::drawskell(SharedSection& drawsection) {
 
-void Overlay::draw(const SharedSection& drawsection)
+}
+
+void Overlay::draw(SharedSection& drawsection)
 {
 	MSG message;
 	message.message = WM_NULL;
@@ -111,6 +115,61 @@ void Overlay::draw(const SharedSection& drawsection)
 			DrawLine(drawsection.drawline[i].x1, drawsection.drawline[i].y1, drawsection.drawline[i].x2, drawsection.drawline[i].y2, (float)drawsection.drawline[i].thickness,
 				(float)drawsection.drawline[i].r, (float)drawsection.drawline[i].g, (float)drawsection.drawline[i].b, (float)drawsection.drawline[i].a);//(float)drawsection.drawline[i].a);
 		}
+
+		for (int i = 0; i < drawsection.playernum; i++) {
+			Vector3 fforepos = { (float)drawsection.player[i]._15x , (float)drawsection.player[i]._15y,0 };// GetBoneWithRotation(mesh, fforehead);
+			Vector3 fHeadpos = { (float)drawsection.player[i]._6x , (float)drawsection.player[i]._6y,0 };//GetBoneWithRotation(mesh, fHead);
+			Vector3 fneck_01pos = { (float)drawsection.player[i]._5x , (float)drawsection.player[i]._5y,0 };//GetBoneWithRotation(mesh, fneck_01);
+
+
+			Vector3 fupperarm_r_pos = { (float)drawsection.player[i]._115x , (float)drawsection.player[i]._115y,0 };//GetBoneWithRotation(mesh, fupperarm_r);
+			Vector3 flowerarm_r_pos = { (float)drawsection.player[i]._116x , (float)drawsection.player[i]._116y,0 };// GetBoneWithRotation(mesh, flowerarm_r);
+			Vector3 fhand_r_pos = { (float)drawsection.player[i]._117x , (float)drawsection.player[i]._117y,0 };//GetBoneWithRotation(mesh, fhand_r);
+
+			Vector3 fupperarm_l_pos = { (float)drawsection.player[i]._88x , (float)drawsection.player[i]._88y,0 };//GetBoneWithRotation(mesh, fupperarm_l);
+			Vector3 flowerarm_l_pos = { (float)drawsection.player[i]._89x , (float)drawsection.player[i]._89y,0 };//GetBoneWithRotation(mesh, flowerarm_l);
+			Vector3 fhand_l_pos = { (float)drawsection.player[i]._90x , (float)drawsection.player[i]._90y,0 };//GetBoneWithRotation(mesh, fhand_l);
+
+
+			Vector3 fpelvis_pos = { (float)drawsection.player[i]._1x , (float)drawsection.player[i]._1y,0 };//GetBoneWithRotation(mesh, fpelvis);
+			Vector3 fspine_02_pos = { (float)drawsection.player[i]._3x,  (float)drawsection.player[i]._3y, 0 };// GetBoneWithRotation(mesh, fspine_02);
+			Vector3 fspine_01_pos = { (float)drawsection.player[i]._2x,  (float)drawsection.player[i]._2y, 0 };//GetBoneWithRotation(mesh, fspine_01);
+
+
+			Vector3 fthigh_r_pos = { (float)drawsection.player[i]._174x,  (float)drawsection.player[i]._174y, 0 };//GetBoneWithRotation(mesh, fthigh_r);
+			Vector3 fcalf_r_pos = { (float)drawsection.player[i]._175x,  (float)drawsection.player[i]._175y, 0 };//GetBoneWithRotation(mesh, fcalf_r);
+			Vector3 ffoot_r_pos = { (float)drawsection.player[i]._176x,  (float)drawsection.player[i]._176y, 0 };//GetBoneWithRotation(mesh, ffoot_r);
+
+
+			Vector3 fthigh_l_pos = { (float)drawsection.player[i]._168x,  (float)drawsection.player[i]._168y, 0 };//GetBoneWithRotation(mesh, fthigh_l);
+			Vector3 fcalf_l_pos = { (float)drawsection.player[i]._169x,  (float)drawsection.player[i]._169y, 0 };//GetBoneWithRotation(mesh, fcalf_l);
+			Vector3 ffoot_l_pos = { (float)drawsection.player[i]._170x,  (float)drawsection.player[i]._170y, 0 };//GetBoneWithRotation(mesh, ffoot_l);
+
+			DrawLine(fforepos.x, fforepos.y, fHeadpos.x, fHeadpos.y, 3, 1, 1, 1, 1);
+			DrawLine(fHeadpos.x, fHeadpos.y, fneck_01pos.x, fneck_01pos.y, 3, 1, 1, 1, 1);
+
+			DrawLine(fneck_01pos.x, fneck_01pos.y, fupperarm_r_pos.x, fupperarm_r_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(fupperarm_r_pos.x, fupperarm_r_pos.y, flowerarm_r_pos.x, flowerarm_r_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(flowerarm_r_pos.x, flowerarm_r_pos.y, fhand_r_pos.x, fhand_r_pos.y, 3, 1, 1, 1, 1);
+
+			DrawLine(fneck_01pos.x, fneck_01pos.y, fupperarm_l_pos.x, fupperarm_l_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(fupperarm_l_pos.x, fupperarm_l_pos.y, flowerarm_l_pos.x, flowerarm_l_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(flowerarm_l_pos.x, flowerarm_l_pos.y, fhand_l_pos.x, fhand_l_pos.y, 3, 1, 1, 1, 1);
+
+			DrawLine(fneck_01pos.x, fneck_01pos.y, fspine_02_pos.x, fspine_02_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(fspine_02_pos.x, fspine_02_pos.y, fspine_01_pos.x, fspine_01_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(fspine_01_pos.x, fspine_01_pos.y, fpelvis_pos.x, fpelvis_pos.y, 3, 1, 1, 1, 1);
+
+			DrawLine(fpelvis_pos.x, fpelvis_pos.y, fthigh_r_pos.x, fthigh_r_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(fthigh_r_pos.x, fthigh_r_pos.y, fcalf_r_pos.x, fcalf_r_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(fcalf_r_pos.x, fcalf_r_pos.y, ffoot_r_pos.x, ffoot_r_pos.y, 3, 1, 1, 1, 1);
+
+			DrawLine(fpelvis_pos.x, fpelvis_pos.y, fthigh_l_pos.x, fthigh_l_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(fthigh_l_pos.x, fthigh_l_pos.y, fcalf_l_pos.x, fcalf_l_pos.y, 3, 1, 1, 1, 1);
+			DrawLine(fcalf_l_pos.x, fcalf_l_pos.y, ffoot_l_pos.x, ffoot_l_pos.y, 3, 1, 1, 1, 1);
+		}
+
+		drawskell(drawsection);
 
 		target->EndDraw();
 	}

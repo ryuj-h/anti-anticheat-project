@@ -15,7 +15,8 @@ class Overlay
 {
 public:
 	void init();
-	void draw(const SharedSection& drawsection);
+	void drawskell(SharedSection& drawsection);
+	void draw(SharedSection& drawsection);
 
 	void DrawString(std::string str, float fontSize, float x, float y, float r, float g, float b, float a);
 	void DrawBox(float x, float y, float width, float height, float thickness, float r, float g, float b, float a, bool filled);

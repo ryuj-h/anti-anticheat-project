@@ -25,9 +25,6 @@ void handle_post(http_request request)
     overlay->aa++;
     request.extract_json().then([request](web::json::value v) {
         //wcout << body.serialize() << endl;
-
-
-
         try
         {
            // std::cout << "parse json data";
@@ -60,9 +57,46 @@ void handle_post(http_request request)
             }
             drawsection.linenum = lines.size();
             
-            
-            //std::wcout << "\n" << status;
-
+            auto players = v.at(U("Players")).as_array();
+            for (int i = 0; i < players.size(); i++) {
+                drawsection.player[i]._15x = players[i].at(U("15x")).as_integer();
+                drawsection.player[i]._15y = players[i].at(U("15y")).as_integer();
+                drawsection.player[i]._6x = players[i].at(U("6x")).as_integer();
+                drawsection.player[i]._6y = players[i].at(U("6y")).as_integer();
+                drawsection.player[i]._5x = players[i].at(U("5x")).as_integer();
+                drawsection.player[i]._5y = players[i].at(U("5y")).as_integer();
+                drawsection.player[i]._115x = players[i].at(U("115x")).as_integer();
+                drawsection.player[i]._115y = players[i].at(U("115y")).as_integer();
+                drawsection.player[i]._116x = players[i].at(U("116x")).as_integer();
+                drawsection.player[i]._116y = players[i].at(U("116y")).as_integer();
+                drawsection.player[i]._117x = players[i].at(U("117x")).as_integer();
+                drawsection.player[i]._117y = players[i].at(U("117y")).as_integer();
+                drawsection.player[i]._88x = players[i].at(U("88x")).as_integer();
+                drawsection.player[i]._88y = players[i].at(U("88y")).as_integer();
+                drawsection.player[i]._89x = players[i].at(U("89x")).as_integer();
+                drawsection.player[i]._89y = players[i].at(U("89y")).as_integer();
+                drawsection.player[i]._90x = players[i].at(U("90x")).as_integer();
+                drawsection.player[i]._90y = players[i].at(U("90y")).as_integer();
+                drawsection.player[i]._1x = players[i].at(U("1x")).as_integer();
+                drawsection.player[i]._1y = players[i].at(U("1y")).as_integer();
+                drawsection.player[i]._3x = players[i].at(U("3x")).as_integer();
+                drawsection.player[i]._3y = players[i].at(U("3y")).as_integer();
+                drawsection.player[i]._2x = players[i].at(U("2x")).as_integer();
+                drawsection.player[i]._2y = players[i].at(U("2y")).as_integer();
+                drawsection.player[i]._174x = players[i].at(U("174x")).as_integer();
+                drawsection.player[i]._174y = players[i].at(U("174y")).as_integer();
+                drawsection.player[i]._175x = players[i].at(U("175x")).as_integer();
+                drawsection.player[i]._175y = players[i].at(U("175y")).as_integer();
+                drawsection.player[i]._176x = players[i].at(U("176x")).as_integer();
+                drawsection.player[i]._176y = players[i].at(U("176y")).as_integer();
+                drawsection.player[i]._168x = players[i].at(U("168x")).as_integer();
+                drawsection.player[i]._168y = players[i].at(U("168y")).as_integer();
+                drawsection.player[i]._169x = players[i].at(U("169x")).as_integer();
+                drawsection.player[i]._169y = players[i].at(U("169y")).as_integer();
+                drawsection.player[i]._170x = players[i].at(U("170x")).as_integer();
+                drawsection.player[i]._170y = players[i].at(U("170y")).as_integer();
+            }
+            drawsection.playernum = players.size();
             /*auto array = v.at(U("rows")).as_array();
             for (int i = 0; i < array.size(); ++i)
             {
