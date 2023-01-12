@@ -1,6 +1,7 @@
 #include "App.h"
 
 void App::Init() {
+	system("pause");
 	m_CURL = new CURLWrapper();
 	dr = new hkdrv();
 
@@ -47,10 +48,80 @@ void App::Tick()
 			}));
 	}
 	
-	if (m_CURL->getReadyState()){
-		auto dd = data.dump();
-		m_CURL->sendData(dd);
+	ULONG64 tickcount = GetTickCount64();
+
+
+	uint64_t t = GetTickCount64();
+	if (t - lastcheck > 1000) {
+		fps = 0;
+		UpdatePtr();
+		snapShotPlayers();
+		lastcheck = t;
 	}
+
+
+	data["lat"] = connectiontimePlus;
+
+
+
+	jsonqueue.push(make_pair(t, data));
+
+	/*while (true) {
+		ULONG64 tickcount2 = GetTickCount64();
+		if (tickcount2 - tickcount >= 5)
+			break;
+	}*/
+
+	key_ctrl = dr->GetKeystate(VK_LCONTROL);
+	key_O = dr->GetKeystate(0x4F);
+	key_P = dr->GetKeystate(0x50);
+	
+	if (key_ctrl && key_O) {
+		connectiontimePlus--;
+		if (connectiontimePlus < 0)
+			connectiontimePlus = 0;
+		Sleep(100);
+	}
+	else if (key_ctrl && key_P) {
+		connectiontimePlus++;
+		if (connectiontimePlus > 100)
+			connectiontimePlus = 100;
+		Sleep(100);
+	}
+
+	int ttime = connectiontimePlus;
+
+
+	ULONG64 tickcount2 = GetTickCount64();
+	if (!jsonqueue.empty()) {
+		auto firstjson = jsonqueue.front();
+		auto ticktime = firstjson.first;
+		auto jsondata = firstjson.second;
+
+		//cout << dec<< tickcount2 - ticktime << endl;
+		if (tickcount2 - ticktime >  connectiontimePlus){/// 2 + 19) {
+			jsonqueue.pop();
+			if (m_CURL->getReadyState()) {
+				auto dd = jsondata.dump();
+				m_CURL->sendData(dd);
+				ULONG64 tickcount3 = GetTickCount64();
+				//conectiontime = min(conectiontime ,tickcount3 - tickcount2);
+			}
+		}
+	}
+	while (!jsonqueue.empty()) {
+		auto firstjson = jsonqueue.front();
+		auto ticktime = firstjson.first;
+		auto jsondata = firstjson.second;
+		if (tickcount2 - ticktime > connectiontimePlus + 5){ //conectiontime/ 2 + 16 + connectiontimePlus){// / 2 + 23) {
+			jsonqueue.pop();
+		}
+		else
+			break;
+	}
+
+	connectiontimeEnum = conectiontime / 2 + connectiontimePlus;
+	
 }
 
 void App::InitDrawSection()
@@ -117,10 +188,9 @@ void App::UpdatePtr()
 	dr->RPM(g_pid, &g_playercontroller, g_localplayer + o_PlayerController, 8);
 	g_playercontroller = Decryptptr(g_playercontroller);
 
-	uint64_t pawnread;
+	uint64_t pawnread = 0;
 	dr->RPM(g_pid, &pawnread, g_playercontroller + oPawn, 8);
-	if (pawnread)
-		g_aPawn = Decryptptr(pawnread);
+	g_aPawn = Decryptptr(pawnread);
 
 	dr->RPM(g_pid, &g_cameramanager, g_playercontroller + o_Cameramanager, 8);
 
@@ -356,6 +426,28 @@ unsigned int App::decryptid(const unsigned int& v13)
 	return decid;
 }
 
+void App::GetHotkey()
+{
+	key_ctrl = dr->GetKeystate(VK_LCONTROL);
+
+
+}
+
+void App::SetPlustime()
+{
+	key_ctrl = dr->GetKeystate(VK_LCONTROL);
+	key_O = dr->GetKeystate(0x4F);
+	key_P = dr->GetKeystate(0x50);
+	if (key_ctrl && key_O) {
+		connectiontimePlus--;
+		Sleep(100);
+	}
+	else if (key_ctrl && key_O) {
+		connectiontimePlus++;
+		Sleep(100);
+	}
+}
+
 void App::GetCameraCache()
 {
 	dr->RPM(g_pid, &CameraCache.POV.FOV, g_cameramanager + o_camera_fov, 4);
@@ -527,34 +619,92 @@ void App::DrawSkeleton_manual(uint64_t mesh, bool isvisible)
 
 void App::Playerloop(json& data)
 {
+	if (g_aPawn) {
+		int id;
+		dr->RPM(g_pid, &id, g_aPawn + oActor_ID, 4);
+		id = decryptid(id);
+
+		if (id == PlayerFemale_A_C ||
+			id == PlayerMale_A_C ||
+			id == RegistedPlayer){
+			playerentity = g_aPawn;
+		}
+		else {
+			uint64_t ViewTarget = 0;
+			dr->RPM(g_pid, &ViewTarget, g_cameramanager + oViewTarget, 8);
+			if (ViewTarget){
+				int iid = 0;
+				dr->RPM(g_pid, &iid, ViewTarget + oActor_ID, 4);
+				iid = decryptid(iid);
+
+				if (iid == PlayerFemale_A_C ||
+					iid == PlayerMale_A_C ||
+					iid == RegistedPlayer){
+					playerentity = ViewTarget;
+				}
+			}
+		}
+	}
+	//playerentity = g_aPawn;
+
+	if (playerentity) {
+		dr->RPM(g_pid, &playerteam, playerentity + oTeam, 4);
+		dr->RPM(g_pid, &playermesh, playerentity + oMesh, 4);
+
+		uint64_t playerrootcomp;
+		dr->RPM(g_pid, &playerrootcomp, playerentity + oActor_Rootcomp, 8);
+		playerrootcomp = Decryptptr(playerrootcomp);
+		dr->RPM(g_pid, &playerPosition, playerrootcomp + oRootcompPosition, 12);
+		//playerPosition = GetBoneWithRotation(playermesh, 0);
+	}
 
 	data["Players"] = json::array();//players;
 
 	for (auto entity : Players) {
-		if (entity == g_savedaPawn){
-			//continue;
-		}
+		if (entity == playerentity)// || !playerentity)
+			continue;
 
-		uint64_t rootcomp;
-		dr->RPM(g_pid, &rootcomp, entity + oActor_Rootcomp, 8);
-		rootcomp = Decryptptr(rootcomp);
+		int entityteam;
+		dr->RPM(g_pid, &entityteam, entity + oTeam, 4);
+		if (entityteam == playerteam)
+			continue;
 
+		float entityhealth = 0.f;
+		dr->RPM(g_pid, &entityhealth, entity + oHealth, 4);
+		if (entityhealth == 0.f || entityhealth < 0)
+			continue;
+			
 
-		Vector3 position;
-		dr->RPM(g_pid, &position, rootcomp + oRootcompPosition, 12);
-
-		Vector3 position2 = position;
-		position2.z = position2.z + 180.f;
-
-		Vector3 wts = WorldToScreen(position);
-		Vector3 wts2 = WorldToScreen(position2);
+		//uint64_t rootcomp;
+		//dr->RPM(g_pid, &rootcomp, entity + oActor_Rootcomp, 8);
+		//rootcomp = Decryptptr(rootcomp);
+		//dr->RPM(g_pid, &baseposition, rootcomp + oRootcompPosition, 12);
 
 		uint64_t mesh;
 		dr->RPM(g_pid, &mesh, entity + oMesh, 8);
 		if (mesh < 0xfffff || mesh > 0xfffffffffffffff)
 			continue;
 
-		float distance = position.Distance(CameraCache.POV.Location) / 100.0f;
+
+		int entityvis = 0;
+		float LastSubmitTime;
+		dr->RPM(g_pid, &LastSubmitTime, mesh + oLastSubmitTime, 4);
+		float LastRenderTimeOnScreen;
+		dr->RPM(g_pid, &LastRenderTimeOnScreen, mesh + oLastRenderTimeOnScreen, 4);
+
+		const float VisionTick = 0.04f;
+		bool bVisible = LastRenderTimeOnScreen + VisionTick >= LastSubmitTime;
+
+		if (bVisible)
+			entityvis = 1234;
+
+
+		Vector3 baseposition = GetBoneWithRotation(mesh, 0);
+		Vector3 wtsbaseposition = WorldToScreen(baseposition);
+		float distance = baseposition.Distance(CameraCache.POV.Location) / 100.0f;
+
+		if (distance >= 700.f)
+			continue;
 
 		Vector3 fforepos = GetBoneWithRotation(mesh, fforehead);
 		Vector3 fHeadpos = GetBoneWithRotation(mesh, fHead);
@@ -607,10 +757,58 @@ void App::Playerloop(json& data)
 		fcalf_l_pos = WorldToScreen(fcalf_l_pos);
 		ffoot_l_pos = WorldToScreen(ffoot_l_pos);
 
-		drawsection.playernum++;
-	
+		if (distance >= 200.f)
+		{
+			fforepos = { -21,-30,0 };
+			fHeadpos = { -220,-30,0 };
+			fneck_01pos = { -240,-30,0 };
 
+			fupperarm_r_pos = { -250,-30,0 };
+			flowerarm_r_pos = { -260,-30,0 };
+			fhand_r_pos = { -270,-30,0 };
+
+			fupperarm_l_pos = { -250,-30,0 };
+			flowerarm_l_pos = { -280,-30,0 };
+			fhand_l_pos = { -270,-30,0 };
+
+			fspine_02_pos = { -240,-30,0 };
+			fspine_01_pos = { -250,-30,0 };
+			fpelvis_pos = { -230,-30,0 };
+
+			fthigh_r_pos = { -260,-30,0 };
+			fcalf_r_pos = { -250,-30,0 };
+			ffoot_r_pos = { -220,-30,0 };
+
+			fthigh_l_pos = { -210,-30,0 };
+			fcalf_l_pos = { -260,-30,0 };
+			ffoot_l_pos = { -220,-30,0 };
+		}
+
+
+
+		int minix = -1;
+		int miniy = -1;
+		if (1) {
+			if (baseposition.x > playerPosition.x - 20000.f && baseposition.x < playerPosition.x + 20000.f && baseposition.y > playerPosition.y - 20000.f && baseposition.y < playerPosition.y + 20000){
+				minix = (int)fabsf(baseposition.x - (playerPosition.x - 20000.f));
+				miniy = (int)fabsf(baseposition.y - (playerPosition.y - 20000.f));
+
+			}
+		}
+
+
+
+
+		drawsection.playernum++;
+
+		//entityvis
 		data["Players"].emplace_back(json::object({
+				{"minix", (int)minix},
+				{"miniy", (int)miniy},
+				{"vis", (int)entityvis},
+				{"dt", (int)distance},
+				{"bx", (int)wtsbaseposition.x},
+				{"by", (int)wtsbaseposition.y},
 				{"15x", (int)fforepos.x},
 				{"15y", (int)fforepos.y},
 				{"6x", (int)fHeadpos.x},
@@ -657,6 +855,10 @@ void App::Playerloop(json& data)
 
 void App::MainTick(json &data)
 {
+
+	target_tp += time_between_frames;
+	std::this_thread::sleep_until(target_tp);
+
 	fps++;
 	SCenter.x = s_width / 2;
 	SCenter.y = s_height / 2;

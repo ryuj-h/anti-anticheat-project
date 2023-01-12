@@ -12,6 +12,10 @@
 #include <thread>
 #include <iostream>
 #include <list>
+#include <utility>
+#include <queue>
+
+#define ReplayDebug fasle
 
 class App
 {
@@ -32,6 +36,8 @@ public:
 	void snapShotPlayers();
 	unsigned int decryptid(const unsigned int& v13);
 
+	void GetHotkey();
+	void SetPlustime();
 	void GetCameraCache();
 	DDMATRIX Matrix(Vector3 rot, Vector3 origin);
 	Vector3 WorldToScreenAim(Vector3 WorldLocation, Vector3 Rot);
@@ -54,6 +60,14 @@ private:
 	SharedSection drawsection;
 	hkdrv* dr;
 
+	std::chrono::microseconds time_between_frames = std::chrono::microseconds(std::chrono::seconds(1)) / 120;
+	std::chrono::steady_clock::time_point target_tp = std::chrono::steady_clock::now();
+
+	std::queue <std::pair<ULONG64, json>> jsonqueue;
+	int conectiontime = 5;
+	int connectiontimePlus = 5;
+	int connectiontimeEnum;
+
 	uint64_t Tmpadd;
 #define DecryptData(argv)	fnDecryptFunctoin(Tmpadd, argv)
 	typedef int64_t(__fastcall* DecryptFunctoin)(uintptr_t key, uintptr_t argv);
@@ -74,6 +88,12 @@ private:
 	uint64_t	g_savedaPawn;
 	uint64_t	g_tslgamestate;
 	uint64_t	g_gnames;
+
+	uint64_t	playerentity;
+	uint64_t	playermesh;
+	int			playerteam;
+	int			playerRenderingTime;
+	Vector3		playerPosition;
 
 	int PlayerFemale_A_C = 0;
 	int PlayerMale_A_C = 0;
@@ -101,5 +121,8 @@ private:
 	std::vector<uint64_t> Bots;
 
 	FCameraCacheEntry CameraCache;
+	bool key_ctrl;
+	bool key_O;
+	bool key_P;
 };
 

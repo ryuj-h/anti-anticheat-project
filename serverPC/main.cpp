@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
 #include <cpprest/http_listener.h>
 
 #include "Overlay.h"
@@ -32,6 +33,9 @@ void handle_post(http_request request)
             //wcout << jsonval;
             //auto status = v.at(U("status")).as_string();
 
+            auto latency = v.at(U("lat")).as_integer();
+            drawsection.latency = latency;
+
             auto lines = v.at(U("ln")).as_array();
 
             for (int i = 0; i < lines.size(); i++){
@@ -59,6 +63,19 @@ void handle_post(http_request request)
             
             auto players = v.at(U("Players")).as_array();
             for (int i = 0; i < players.size(); i++) {
+
+                //vis
+                drawsection.player[i].visible = players[i].at(U("vis")).as_integer();
+                drawsection.player[i]._minimapx = players[i].at(U("minix")).as_integer();
+                drawsection.player[i]._minimapy = players[i].at(U("miniy")).as_integer();
+
+
+
+                drawsection.player[i].distance = players[i].at(U("dt")).as_integer();
+                drawsection.player[i]._basex = players[i].at(U("bx")).as_integer();
+                drawsection.player[i]._basey = players[i].at(U("by")).as_integer();
+
+
                 drawsection.player[i]._15x = players[i].at(U("15x")).as_integer();
                 drawsection.player[i]._15y = players[i].at(U("15y")).as_integer();
                 drawsection.player[i]._6x = players[i].at(U("6x")).as_integer();
@@ -129,6 +146,8 @@ int main() {
     overlay->draw(drawsection);
 
 	http_listener listener(U("http://*:17891"));
+    //http_listener listener(U("http://localhost:17891"));
+    //U("http://*:17891"));
 
 	listener.open().then([&listener]() {
         std::cout << (U("\n start \n")); 
@@ -136,10 +155,16 @@ int main() {
 	
     listener.support(methods::GET, handle_get);
     listener.support(methods::POST, handle_post);
-    
+
+    std::chrono::microseconds time_between_frames = std::chrono::microseconds(std::chrono::seconds(1)) / 120;
+    std::chrono::steady_clock::time_point target_tp = std::chrono::steady_clock::now();
     while (true) {
         if (overlay)
+        {
             overlay->draw(drawsection);
+            target_tp += time_between_frames;
+            std::this_thread::sleep_until(target_tp);
+        }
     }
     listener.close();
 	return 0;

@@ -78,13 +78,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\include;C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\json;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\include;C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\include;D:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\json;C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\json;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\lib;C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\include;C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\json;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\include;D:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\json;C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\include;C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\json;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\lib;C:\Users\Commit\source\repos\PUBG anti-anticheat project\clientPC\libcurl-vc-x64-release-static-ipv6-sspi-winssl\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

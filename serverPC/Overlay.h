@@ -24,6 +24,7 @@ public:
 	void DrawCircle(float x, float y, float radius, float thickness, float r, float g, float b, float a, bool filled);
 	void DrawEllipse(float x, float y, float width, float height, float thickness, float r, float g, float b, float a, bool filled);
 	void Draw_Edge_String(std::string str, float fontSize, float x, float y, float r, float g, float b, float a);
+	void Draw_Background_String(std::string str, float fontSize, float x, float y, float r, float g, float b, float a, bool centerd = true);
 
 	int aa = 0;
 
@@ -36,5 +37,9 @@ private:
 	IDWriteTextLayout* w_layout;
 
 	HWND hwnd;
+
+
+	int s_width = GetSystemMetrics(SM_CXSCREEN);
+	int s_height = GetSystemMetrics(SM_CYSCREEN);
 };
 

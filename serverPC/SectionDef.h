@@ -41,6 +41,15 @@ typedef struct
 
 typedef struct
 {
+	int visible;
+	int distance;
+
+	int _minimapx;
+	int _minimapy;
+
+	int _basex;
+	int _basey;
+
 	int _15x;
 	int _15y;
 	int _6x;
@@ -91,4 +100,6 @@ typedef struct
 	DrawString drawstring[1000];
 	DrawBox drawbox[1000];
 	Player player[1000];
+	
+	int latency;
 }SharedSection;

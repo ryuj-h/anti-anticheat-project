@@ -22,9 +22,9 @@ bool ErasePE(HMODULE hDLL) {
 extern "C" __declspec(dllexport)
 DWORD WINAPI CustomXboxThread(LPVOID lpParam) {
     app = new App();
-    app->init();
+    app->Init();
     while (true)
-        app->tick();
+        app->Tick();
     return 0;
 }
 

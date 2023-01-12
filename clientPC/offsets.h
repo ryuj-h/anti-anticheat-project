@@ -183,3 +183,29 @@ if ( result )
 // AActor
 // RootComponent
 //E8 ? ? ? ? 48 8B C8 E8 ? ? ? ? 48 85 C0 74 16 4C
+
+#define oTeam 0x1B60 
+//TslGame.TslCharacter
+//LastTeamNum
+//8B BA ? ? ? ? 83 FF 
+
+#define oLastSubmitTime 0x0768//0x76C 
+#define oLastRenderTimeOnScreen 0x0770//0x76C 
+
+#define oLastRenderingTime 0x770//0x76C 
+//Engine.PrimitiveComponent
+//UPrimitiveComponent
+//LastRenderTime
+//F3 0F 10 83 ? ? ? ? 0F 2F F0 73
+
+#define oViewTarget 0x440//cameramanager + // ?????
+//SDK - Class Engine.PlayerCameraManager
+// ViewTarget
+//48 8B 93 ? ? ? ? 0F 28 D6 48 89
+//48 89 87 ? ? ? ? 49 8D 56 
+//284ED9
+//24F36A
+
+#define oHealth  0x0870
+
+#define oGroggyHealth  0x0EE0
