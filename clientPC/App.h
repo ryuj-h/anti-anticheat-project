@@ -60,7 +60,7 @@ private:
 	SharedSection drawsection;
 	hkdrv* dr;
 
-	std::chrono::microseconds time_between_frames = std::chrono::microseconds(std::chrono::seconds(1)) / 120;
+	std::chrono::microseconds time_between_frames = std::chrono::microseconds(std::chrono::seconds(1)) / 240;
 	std::chrono::steady_clock::time_point target_tp = std::chrono::steady_clock::now();
 
 	std::queue <std::pair<ULONG64, json>> jsonqueue;
@@ -94,6 +94,13 @@ private:
 	int			playerteam;
 	int			playerRenderingTime;
 	Vector3		playerPosition;
+
+	int			playerCurrGunIdx;
+	float		playerGunSpeed;
+
+	Vector3		AimbotPredicWorldPos;
+	Vector3		AimbotPredicScreenPos;
+	bool		AimbotTartgetExist;
 
 	int PlayerFemale_A_C = 0;
 	int PlayerMale_A_C = 0;

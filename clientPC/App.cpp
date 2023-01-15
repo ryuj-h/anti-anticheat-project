@@ -95,33 +95,28 @@ void App::Tick()
 	ULONG64 tickcount2 = GetTickCount64();
 	if (!jsonqueue.empty()) {
 		auto firstjson = jsonqueue.front();
-		auto ticktime = firstjson.first;
-		auto jsondata = firstjson.second;
+		auto ticktime = firstjson.first;//데이터가 처리될 때의 시간
+		auto jsondata = firstjson.second;//처리된 json 데이터
 
-		//cout << dec<< tickcount2 - ticktime << endl;
-		if (tickcount2 - ticktime >  connectiontimePlus){/// 2 + 19) {
-			jsonqueue.pop();
+		if (tickcount2 - ticktime >  connectiontimePlus){//일정 시간이 지났다면
+			jsonqueue.pop();//큐에서 pop
 			if (m_CURL->getReadyState()) {
 				auto dd = jsondata.dump();
-				m_CURL->sendData(dd);
+				m_CURL->sendData(dd);//POST 요청
 				ULONG64 tickcount3 = GetTickCount64();
-				//conectiontime = min(conectiontime ,tickcount3 - tickcount2);
 			}
 		}
 	}
-	while (!jsonqueue.empty()) {
+	while (!jsonqueue.empty()) {//너무 오래 걸려 POST 요청이 지연되고 있다면 큐를 비워줌
 		auto firstjson = jsonqueue.front();
 		auto ticktime = firstjson.first;
 		auto jsondata = firstjson.second;
-		if (tickcount2 - ticktime > connectiontimePlus + 5){ //conectiontime/ 2 + 16 + connectiontimePlus){// / 2 + 23) {
+		if (tickcount2 - ticktime > connectiontimePlus + 5){ 
 			jsonqueue.pop();
 		}
 		else
 			break;
 	}
-
-	connectiontimeEnum = conectiontime / 2 + connectiontimePlus;
-	
 }
 
 void App::InitDrawSection()
@@ -421,7 +416,7 @@ void App::snapShotPlayers()
 unsigned int App::decryptid(const unsigned int& v13)
 {
 	unsigned int decid = 0;
-	decid = __ROR4__(v13 ^ 0xE80BFFDD, 1) ^ (__ROR4__(v13 ^ 0xE80BFFDD, 1) << 16) ^ 0xD617DAC3;
+	decid = __ROL4__(v13 ^ 0x99D08BB0, 9) ^ (__ROL4__(v13 ^ 0x99D08BB0, 9) << 16) ^ 0x60128D6D;
 	//__ROL4__(v13 ^ 0x3D4D27BF, 5) ^ (__ROL4__(v13 ^ 0x3D4D27BF, 5) << 16) ^ 0xF21AA6A6;
 	return decid;
 }
@@ -646,19 +641,144 @@ void App::Playerloop(json& data)
 		}
 	}
 	//playerentity = g_aPawn;
-
+	Vector3 sway;
 	if (playerentity) {
 		dr->RPM(g_pid, &playerteam, playerentity + oTeam, 4);
-		dr->RPM(g_pid, &playermesh, playerentity + oMesh, 4);
+		dr->RPM(g_pid, &playermesh, playerentity + oMesh, 8);
 
 		uint64_t playerrootcomp;
 		dr->RPM(g_pid, &playerrootcomp, playerentity + oActor_Rootcomp, 8);
 		playerrootcomp = Decryptptr(playerrootcomp);
 		dr->RPM(g_pid, &playerPosition, playerrootcomp + oRootcompPosition, 12);
-		//playerPosition = GetBoneWithRotation(playermesh, 0);
+		Vector3 playerVelocity;
+		dr->RPM(g_pid, &playerVelocity, playerrootcomp + oComponentVelocity, 12);
+
+		// Get Weapon data
+
+		uint64_t AnimScript;
+		dr->RPM(g_pid, &AnimScript, playermesh + oMeshAnimScriptInstance, 8);
+
+		dr->RPM(g_pid, &sway, AnimScript + ocontrol_rotation_cp, 12);
+
+		Vector3 recoil;
+		dr->RPM(g_pid, &recoil, AnimScript + orecoil_ads_rotation_cp, 12);
+
+		float lla;
+		float lra;
+
+		dr->RPM(g_pid, &lla, AnimScript + olean_left_alpha_cp, 4);
+		dr->RPM(g_pid, &lra, AnimScript + olean_right_alpha_cp, 4);
+		recoil.y += (lra - lla) * recoil.x / 3.0f;
+
+		/*if (recoil.Size() > 0.25f) {
+			recoil.y -= lla / 4.0f;
+			recoil.y += lra / 4.0f;
+		}*/
+
+		sway.x += recoil.x;
+		sway.y += recoil.y;
+		sway.z += recoil.z;
+
+		uint64_t pWeaponProcessor;
+		dr->RPM(g_pid, &pWeaponProcessor, playerentity + oWeaponProcessor, 8);
+
+		uint64_t pEquippedWeapons;
+		dr->RPM(g_pid, &pEquippedWeapons, pWeaponProcessor + oEquippedWeapons, 8);
+
+		char currentWeaponIdxtemp = 0;
+		dr->RPM(g_pid, &currentWeaponIdxtemp, pWeaponProcessor + oCurrWeapoinIdx, sizeof(char));
+		int currentWeaponIdx = currentWeaponIdxtemp;
+
+		uint64_t pNowWeapon;
+		dr->RPM(g_pid, &pNowWeapon, pEquippedWeapons + 8 * currentWeaponIdx, 8);
+
+		uint64_t trajectory_weapon_data;
+		dr->RPM(g_pid, &trajectory_weapon_data, pNowWeapon + oWeaponTrajectoryData, 8);
+
+		float initial_speed = 0.0f;
+		dr->RPM(g_pid, &initial_speed, trajectory_weapon_data + oTrajectoryConfig, 4);
+
+
+		if (currentWeaponIdx >= -1 && currentWeaponIdx <= 4) {
+			playerCurrGunIdx = pNowWeapon;
+			if (initial_speed >= 50.f && initial_speed <= 1500.f) {
+				playerGunSpeed = initial_speed;
+			}
+		}
+
+		uint64_t VehicleRiderComponent = 0;
+		dr->RPM(g_pid, &VehicleRiderComponent, playerentity + oVehicleRiderComponent, 8);
+
+		uint64_t LastVehiclePawn = 0;
+		dr->RPM(g_pid, &LastVehiclePawn, VehicleRiderComponent + oLastVehiclePawn, 8);
+
+		int Seatindex = 0;
+		dr->RPM(g_pid, &Seatindex, VehicleRiderComponent + oSeatIndex, 4);
+
+		Vector3 ReplicateMovement;
+		dr->RPM(g_pid, &ReplicateMovement, LastVehiclePawn + oReplicatedMovement, 12);
+		//oReplicatedMovement
+		if (false){//debug
+			system("cls");
+			std::cout << "[+] pWeaponProcessor: " << hex << pWeaponProcessor << endl;
+			std::cout << "[+] pEquippedWeapons: " << hex << pEquippedWeapons << endl;
+			std::cout << "[+] currentWeaponIdx: " << hex << currentWeaponIdx << endl;
+			std::cout << "[+] pNowWeapon	  : " << pNowWeapon << endl;
+			std::cout << "[+] trajectory_weapon_data: " << hex << trajectory_weapon_data << endl;
+			std::cout << "[+] bulltet speed         : " << hex << initial_speed << endl;
+
+			//brute force
+			for (int i = 0; i < 0xFFF; i = i + 0x4) {
+				uint64_t pEquippedWeaponsbf = 0x0;
+				dr->RPM(g_pid, &pEquippedWeaponsbf, pWeaponProcessor + i, 8);
+
+				uint64_t pNowWeaponbf;
+				dr->RPM(g_pid, &pNowWeaponbf, pEquippedWeaponsbf + 8 * currentWeaponIdx, 8);
+
+				uint64_t trajectory_weapon_databf;
+				dr->RPM(g_pid, &trajectory_weapon_databf, pNowWeaponbf + oWeaponTrajectoryData, 8);
+
+				for (int j = 0; j < 0x7ff; j = j + 0x2) {
+					float initial_speedbf = 0.f;
+
+					dr->RPM(g_pid, &initial_speedbf, trajectory_weapon_databf + j, 4);
+					if (initial_speedbf == 880.f) {
+						cout << hex << "oEquippedWeapons offset : 0x" << i << endl;
+						cout << hex << "oTrajectoryConfig offset : 0x" << j << endl;
+						break;
+					}
+				}
+			}
+
+
+			if (false)
+			for (int i = 0; i < 0xFFF; i++)
+			{
+				initial_speed = 0.0f;
+				dr->RPM(g_pid, &initial_speed, trajectory_weapon_data + i, 4);
+				if (initial_speed == 880.f) {
+					cout << hex << i << endl;
+				}
+			}
+			Sleep(64);
+		}
 	}
 
 	data["Players"] = json::array();//players;
+
+	int Aimsize = 100 * 70 / (CameraCache.POV.FOV);
+	if (Aimsize > 200)
+		Aimsize = 200;
+	AimbotTartgetExist = false;
+	AimbotPredicScreenPos = { 0,0,0 };
+	float distancecehck = 999999;
+
+	float aimspeed = 2.0f;
+	int calx;
+	int caly;
+
+	float TargetX = 0;
+	float TargetY = 0;
 
 	for (auto entity : Players) {
 		if (entity == playerentity)// || !playerentity)
@@ -675,10 +795,10 @@ void App::Playerloop(json& data)
 			continue;
 			
 
-		//uint64_t rootcomp;
-		//dr->RPM(g_pid, &rootcomp, entity + oActor_Rootcomp, 8);
-		//rootcomp = Decryptptr(rootcomp);
-		//dr->RPM(g_pid, &baseposition, rootcomp + oRootcompPosition, 12);
+		uint64_t entityrootcomp;
+		dr->RPM(g_pid, &entityrootcomp, entity + oActor_Rootcomp, 8);
+		entityrootcomp = Decryptptr(entityrootcomp);
+		//dr->RPM(g_pid, &baseposition, entityrootcomp + oRootcompPosition, 12);
 
 		uint64_t mesh;
 		dr->RPM(g_pid, &mesh, entity + oMesh, 8);
@@ -756,6 +876,74 @@ void App::Playerloop(json& data)
 		fthigh_l_pos = WorldToScreen(fthigh_l_pos);
 		fcalf_l_pos = WorldToScreen(fcalf_l_pos);
 		ffoot_l_pos = WorldToScreen(ffoot_l_pos);
+
+		if (bVisible){
+			uint64_t VehicleRiderComponent = 0;
+			dr->RPM(g_pid, &VehicleRiderComponent, entity + oVehicleRiderComponent, 8);
+
+			uint64_t LastVehiclePawn = 0;
+			dr->RPM(g_pid, &LastVehiclePawn, VehicleRiderComponent + oLastVehiclePawn, 8);
+
+			int Seatindex = 0;
+			dr->RPM(g_pid, &Seatindex, VehicleRiderComponent + oSeatIndex, 4);
+
+			Vector3 Velocity{ 0,0,0 };
+			if (Seatindex == -1) 
+				dr->RPM(g_pid, &Velocity, entityrootcomp + oComponentVelocity, 12);
+			else 
+				dr->RPM(g_pid, &Velocity, LastVehiclePawn + oReplicatedMovement, 12);
+
+
+			Vector3 Aiminglocation;
+			Vector3 ActorBaseLoc = GetBoneWithRotation(mesh, 0);
+
+			float SpeedAvg = Velocity.Size();
+			float distancefromBase = ActorBaseLoc.Distance(CameraCache.POV.Location) / 100.0f;
+			int aiming_position = FemaleBones::fforehead;
+			if (distancefromBase < 100.0f){
+				aiming_position = FemaleBones::fforehead;//머리
+			}
+			else
+			{
+				if (dr->GetKeystate(VK_LSHIFT)){
+					aiming_position = FemaleBones::fforehead;
+				}
+				else
+				{
+					if (SpeedAvg > 1.0f) {//움직일 때
+						aiming_position = FemaleBones::fneck_01;
+					}
+					else {//가만히 있을떄
+						if (entityhealth > 60.f)
+							aiming_position = FemaleBones::fforehead;//머리
+						else
+							aiming_position = FemaleBones::fspine_03;
+					}
+				}
+			}
+
+			Aiminglocation = GetBoneWithRotation(mesh, aiming_position);
+
+			float TravelTime = distance / playerGunSpeed;
+			float BulletDrop = 0;
+
+			Vector3 PredictedPos{ 0, 0, 0 };
+			PredictedPos.x = Aiminglocation.x + (Velocity.x * TravelTime);
+			PredictedPos.y = Aiminglocation.y + (Velocity.y * TravelTime);
+			PredictedPos.z = Aiminglocation.z;
+			//PredictedPos.z = Aiminglocation.z + (Velocity.z * flTime) + fabs(BulletDrop); //+ (9.80665f * 100 / 2 * flTime * flTime);
+
+			Vector3 headposwts = WorldToScreenAim(PredictedPos, sway);//WorldToScreen(PredictedPos);
+			float distance1 = SCenter.Distance(headposwts);//Scenter.Distance(headposwts);
+
+
+			if (distance1 < distancecehck){
+				AimbotPredicWorldPos = PredictedPos;
+				AimbotPredicScreenPos = headposwts;
+				distancecehck = distance1;
+				AimbotTartgetExist = true;
+			}
+		}
 
 		if (distance >= 200.f)
 		{
@@ -849,6 +1037,53 @@ void App::Playerloop(json& data)
 
 
 		//DrawSkeleton_manual(mesh, false);
+	}
+
+
+	if (AimbotTartgetExist){
+
+		Vector3 AimpotPredwts = WorldToScreen(AimbotPredicWorldPos);
+		DrawLine(AimpotPredwts.x - 1, AimpotPredwts.y - 1, AimpotPredwts.x + 1, AimpotPredwts.y + 1, 3, 1, 1, 1, 1);
+		DrawLine(AimpotPredwts.x + 1, AimpotPredwts.y - 1, AimpotPredwts.x - 1, AimpotPredwts.y + 1, 3, 1, 1, 1, 1);
+		
+
+		if (playerCurrGunIdx == 0xffffffff)
+			return;
+		/*if (playerCurrGunIdx == 4)
+			return;
+		*/
+		//cout << playerCurrGunIdx << endl;
+		bool aimbotKeypress = false;
+		if (dr->GetKeystate(VK_LBUTTON))
+			aimbotKeypress = true;
+		if (dr->GetKeystate(VK_XBUTTON1))
+			aimbotKeypress = true;
+		if (dr->GetKeystate(VK_XBUTTON2))
+			aimbotKeypress = true;
+
+		if (!aimbotKeypress)
+			return;
+
+
+
+		if (distancecehck < Aimsize){
+			if (AimbotPredicScreenPos.x > (s_width / 2)){
+				calx = -((s_width / 2) - AimbotPredicScreenPos.x);
+				TargetX = calx / aimspeed;
+
+				if (TargetX > 0.125 && TargetX < 1)
+					TargetX = 1;
+			}
+			if (AimbotPredicScreenPos.x < (s_width / 2)){
+				calx = AimbotPredicScreenPos.x - (s_width / 2);
+				TargetX = calx / aimspeed;
+
+				if (TargetX < -0.125f && TargetX > -1)
+					TargetX = -1;
+			}
+
+			dr->mouse_event(TargetX, TargetY, 0);
+		}
 	}
 }
 
