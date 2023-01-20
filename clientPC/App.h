@@ -14,8 +14,23 @@
 #include <list>
 #include <utility>
 #include <queue>
+#include <map>
 
 #define ReplayDebug fasle
+typedef struct EnemyData
+{
+	Vector3 lastposition;
+	uint64_t lastcheck;
+	Vector3 Velocity;
+
+	EnemyData()
+		: lastposition(0,0,0)
+		, lastcheck(0)
+		, Velocity(0,0,0)
+	{
+
+	}
+};
 
 class App
 {
@@ -131,5 +146,9 @@ private:
 	bool key_ctrl;
 	bool key_O;
 	bool key_P;
+	uint64_t aimbotstarttime;
+	uint64_t SavedAimbottargetaddr;
+	uint64_t aimbotendtime;
+
 };
 

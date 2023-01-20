@@ -1,5 +1,7 @@
 #include "App.h"
 
+std::map <uint64_t, EnemyData*> g_EnemyInfo;
+
 void App::Init() {
 	system("pause");
 	m_CURL = new CURLWrapper();
@@ -64,7 +66,6 @@ void App::Tick()
 
 
 
-	jsonqueue.push(make_pair(t, data));
 
 	/*while (true) {
 		ULONG64 tickcount2 = GetTickCount64();
@@ -91,6 +92,14 @@ void App::Tick()
 
 	int ttime = connectiontimePlus;
 
+	if (m_CURL->getReadyState()) {
+		auto dd = data.dump();
+		m_CURL->sendData(dd);//POST 夸没
+		ULONG64 tickcount3 = GetTickCount64();
+	}
+
+	/*
+	jsonqueue.push(make_pair(t, data));
 
 	ULONG64 tickcount2 = GetTickCount64();
 	if (!jsonqueue.empty()) {
@@ -116,7 +125,7 @@ void App::Tick()
 		}
 		else
 			break;
-	}
+	}*/
 }
 
 void App::InitDrawSection()
@@ -295,12 +304,9 @@ bool App::CatchNames()
 	bool debug = false;
 	bool result = false;
 	string name = "";
-	for (int i = 0; i < 0xfffff; i++)
-	{
-		if (isCatchnamedone())
-		{
-			if (result == false)
-			{
+	for (int i = 0; i < 0xfffff; i++){
+		if (isCatchnamedone()){
+			if (result == false){
 				std::cout << "CatchName Almost Done" << endl;
 			}
 			result = true;
@@ -354,10 +360,11 @@ bool App::CatchNames()
 
 	}
 
-	if (!result)
-	{
+	if (!result) {
 		MessageBox(NULL, L"Turn on the program after matching", L"ERROR", MB_OK);
-		exit(true);
+		system("pause");
+		CatchNames();
+		//exit(true);
 	}
 	std::cout << "CatchName Ended" << endl;
 	return result;
@@ -416,7 +423,7 @@ void App::snapShotPlayers()
 unsigned int App::decryptid(const unsigned int& v13)
 {
 	unsigned int decid = 0;
-	decid = __ROL4__(v13 ^ 0x99D08BB0, 9) ^ (__ROL4__(v13 ^ 0x99D08BB0, 9) << 16) ^ 0x60128D6D;
+	decid = __ROR4__(v13 ^ 0x1A018DF6, 10) ^ (__ROR4__(v13 ^ 0x1A018DF6, 10) << 16) ^ 0xF7978B7A;
 	//__ROL4__(v13 ^ 0x3D4D27BF, 5) ^ (__ROL4__(v13 ^ 0x3D4D27BF, 5) << 16) ^ 0xF21AA6A6;
 	return decid;
 }
@@ -653,6 +660,19 @@ void App::Playerloop(json& data)
 		Vector3 playerVelocity;
 		dr->RPM(g_pid, &playerVelocity, playerrootcomp + oComponentVelocity, 12);
 
+		static uint64_t lastchecktick;
+		static Vector3 lastposition100;
+		static Vector3 calcvelocity;
+		uint64_t checktick = GetTickCount64();
+		if (checktick - lastchecktick >= 200) {
+			lastchecktick = checktick;
+
+			calcvelocity = playerPosition - lastposition100;
+			calcvelocity = calcvelocity * 5.f;
+			lastposition100 = playerPosition;
+			//cout << "read velocity : x : " << playerVelocity.x << "	y : " << playerVelocity.y << "	z : " << playerVelocity.z << endl;
+			//cout << "calc velocity : x : " << calcvelocity.x << "	y : " << calcvelocity.y << "	z : " << calcvelocity.z <<endl<< endl;
+		}
 		// Get Weapon data
 
 		uint64_t AnimScript;
@@ -698,9 +718,8 @@ void App::Playerloop(json& data)
 		float initial_speed = 0.0f;
 		dr->RPM(g_pid, &initial_speed, trajectory_weapon_data + oTrajectoryConfig, 4);
 
-
 		if (currentWeaponIdx >= -1 && currentWeaponIdx <= 4) {
-			playerCurrGunIdx = pNowWeapon;
+			playerCurrGunIdx = currentWeaponIdx;
 			if (initial_speed >= 50.f && initial_speed <= 1500.f) {
 				playerGunSpeed = initial_speed;
 			}
@@ -773,7 +792,9 @@ void App::Playerloop(json& data)
 	AimbotPredicScreenPos = { 0,0,0 };
 	float distancecehck = 999999;
 
-	float aimspeed = 2.0f;
+	float aimspeed = 10.0f;
+	float minaimspeed = 3.0f;
+
 	int calx;
 	int caly;
 
@@ -798,7 +819,9 @@ void App::Playerloop(json& data)
 		uint64_t entityrootcomp;
 		dr->RPM(g_pid, &entityrootcomp, entity + oActor_Rootcomp, 8);
 		entityrootcomp = Decryptptr(entityrootcomp);
-		//dr->RPM(g_pid, &baseposition, entityrootcomp + oRootcompPosition, 12);
+		
+		Vector3 rootcompbaseposition;
+		dr->RPM(g_pid, &rootcompbaseposition, entityrootcomp + oRootcompPosition, 12);
 
 		uint64_t mesh;
 		dr->RPM(g_pid, &mesh, entity + oMesh, 8);
@@ -821,6 +844,9 @@ void App::Playerloop(json& data)
 
 		Vector3 baseposition = GetBoneWithRotation(mesh, 0);
 		Vector3 wtsbaseposition = WorldToScreen(baseposition);
+		bool IsOnScreen = false;
+		if (wtsbaseposition.x >= -200 && wtsbaseposition.x <= s_width+200 && wtsbaseposition.y >= -200 && wtsbaseposition.y <= s_height+200)
+			IsOnScreen = true;
 		float distance = baseposition.Distance(CameraCache.POV.Location) / 100.0f;
 
 		if (distance >= 700.f)
@@ -877,6 +903,21 @@ void App::Playerloop(json& data)
 		fcalf_l_pos = WorldToScreen(fcalf_l_pos);
 		ffoot_l_pos = WorldToScreen(ffoot_l_pos);
 
+		uint64_t currtick = GetTickCount64();
+		if (g_EnemyInfo.find(entity) == g_EnemyInfo.end()){
+			g_EnemyInfo.emplace(entity, new EnemyData());
+		}
+		else
+		{
+			auto enemyinfo = g_EnemyInfo[entity];
+			if (currtick - g_EnemyInfo[entity]->lastcheck >= 200) {
+				g_EnemyInfo[entity]->lastcheck = currtick;
+				g_EnemyInfo[entity]->Velocity = rootcompbaseposition - g_EnemyInfo[entity]->lastposition;
+				g_EnemyInfo[entity]->Velocity = g_EnemyInfo[entity]->Velocity * 5.f;
+				g_EnemyInfo[entity]->lastposition = rootcompbaseposition;
+			}
+		}
+
 		if (bVisible){
 			uint64_t VehicleRiderComponent = 0;
 			dr->RPM(g_pid, &VehicleRiderComponent, entity + oVehicleRiderComponent, 8);
@@ -888,10 +929,13 @@ void App::Playerloop(json& data)
 			dr->RPM(g_pid, &Seatindex, VehicleRiderComponent + oSeatIndex, 4);
 
 			Vector3 Velocity{ 0,0,0 };
-			if (Seatindex == -1) 
+			
+			Velocity = g_EnemyInfo[entity]->Velocity;
+			/*if (Seatindex == -1)
 				dr->RPM(g_pid, &Velocity, entityrootcomp + oComponentVelocity, 12);
 			else 
 				dr->RPM(g_pid, &Velocity, LastVehiclePawn + oReplicatedMovement, 12);
+				*/
 
 
 			Vector3 Aiminglocation;
@@ -900,16 +944,14 @@ void App::Playerloop(json& data)
 			float SpeedAvg = Velocity.Size();
 			float distancefromBase = ActorBaseLoc.Distance(CameraCache.POV.Location) / 100.0f;
 			int aiming_position = FemaleBones::fforehead;
-			if (distancefromBase < 100.0f){
+			if (distancefromBase < 50.0f){
 				aiming_position = FemaleBones::fforehead;//赣府
 			}
-			else
-			{
+			else {
 				if (dr->GetKeystate(VK_LSHIFT)){
 					aiming_position = FemaleBones::fforehead;
 				}
-				else
-				{
+				else {
 					if (SpeedAvg > 1.0f) {//框流老 锭
 						aiming_position = FemaleBones::fneck_01;
 					}
@@ -980,60 +1022,61 @@ void App::Playerloop(json& data)
 			if (baseposition.x > playerPosition.x - 20000.f && baseposition.x < playerPosition.x + 20000.f && baseposition.y > playerPosition.y - 20000.f && baseposition.y < playerPosition.y + 20000){
 				minix = (int)fabsf(baseposition.x - (playerPosition.x - 20000.f));
 				miniy = (int)fabsf(baseposition.y - (playerPosition.y - 20000.f));
-
+				IsOnScreen = true;
 			}
 		}
 
 
 
 
-		drawsection.playernum++;
-
-		//entityvis
-		data["Players"].emplace_back(json::object({
-				{"minix", (int)minix},
-				{"miniy", (int)miniy},
-				{"vis", (int)entityvis},
-				{"dt", (int)distance},
-				{"bx", (int)wtsbaseposition.x},
-				{"by", (int)wtsbaseposition.y},
-				{"15x", (int)fforepos.x},
-				{"15y", (int)fforepos.y},
-				{"6x", (int)fHeadpos.x},
-				{"6y", (int)fHeadpos.y},
-				{"5x", (int)fneck_01pos.x},
-				{"5y", (int)fneck_01pos.y},
-				{"115x", (int)fupperarm_r_pos.x},
-				{"115y", (int)fupperarm_r_pos.y},
-				{"116x", (int)flowerarm_r_pos.x},
-				{"116y", (int)flowerarm_r_pos.y},
-				{"117x", (int)fhand_r_pos.x},
-				{"117y", (int)fhand_r_pos.y},
-				{"88x", (int)fupperarm_l_pos.x},
-				{"88y", (int)fupperarm_l_pos.y},
-				{"89x", (int)flowerarm_l_pos.x},
-				{"89y", (int)flowerarm_l_pos.y},
-				{"90x", (int)fhand_l_pos.x},
-				{"90y", (int)fhand_l_pos.y},
-				{"1x", (int)fpelvis_pos.x},
-				{"1y", (int)fpelvis_pos.y},
-				{"3x", (int)fspine_02_pos.x},
-				{"3y", (int)fspine_02_pos.y},
-				{"2x", (int)fspine_01_pos.x},
-				{"2y", (int)fspine_01_pos.y},
-				{"174x", (int)fthigh_r_pos.x},
-				{"174y", (int)fthigh_r_pos.y},
-				{"175x", (int)fcalf_r_pos.x},
-				{"175y", (int)fcalf_r_pos.y},
-				{"176x", (int)ffoot_r_pos.x},
-				{"176y", (int)ffoot_r_pos.y},
-				{"168x", (int)fthigh_l_pos.x},
-				{"168y", (int)fthigh_l_pos.y},
-				{"169x", (int)fcalf_l_pos.x},
-				{"169y", (int)fcalf_l_pos.y},
-				{"170x", (int)ffoot_l_pos.x},
-				{"170y", (int)ffoot_l_pos.y}
-			}));
+		if (IsOnScreen) {
+			drawsection.playernum++;
+			data["Players"].emplace_back(json::object({
+					{"minix", (int)minix},
+					{"miniy", (int)miniy},
+					{"vis", (int)entityvis},
+					{"dt", (int)distance},
+					{"bx", (int)wtsbaseposition.x},
+					{"by", (int)wtsbaseposition.y},
+					{"15x", (int)fforepos.x},
+					{"15y", (int)fforepos.y},
+					{"6x", (int)fHeadpos.x},
+					{"6y", (int)fHeadpos.y},
+					{"5x", (int)fneck_01pos.x},
+					{"5y", (int)fneck_01pos.y},
+					{"115x", (int)fupperarm_r_pos.x},
+					{"115y", (int)fupperarm_r_pos.y},
+					{"116x", (int)flowerarm_r_pos.x},
+					{"116y", (int)flowerarm_r_pos.y},
+					{"117x", (int)fhand_r_pos.x},
+					{"117y", (int)fhand_r_pos.y},
+					{"88x", (int)fupperarm_l_pos.x},
+					{"88y", (int)fupperarm_l_pos.y},
+					{"89x", (int)flowerarm_l_pos.x},
+					{"89y", (int)flowerarm_l_pos.y},
+					{"90x", (int)fhand_l_pos.x},
+					{"90y", (int)fhand_l_pos.y},
+					{"1x", (int)fpelvis_pos.x},
+					{"1y", (int)fpelvis_pos.y},
+					{"3x", (int)fspine_02_pos.x},
+					{"3y", (int)fspine_02_pos.y},
+					{"2x", (int)fspine_01_pos.x},
+					{"2y", (int)fspine_01_pos.y},
+					{"174x", (int)fthigh_r_pos.x},
+					{"174y", (int)fthigh_r_pos.y},
+					{"175x", (int)fcalf_r_pos.x},
+					{"175y", (int)fcalf_r_pos.y},
+					{"176x", (int)ffoot_r_pos.x},
+					{"176y", (int)ffoot_r_pos.y},
+					{"168x", (int)fthigh_l_pos.x},
+					{"168y", (int)fthigh_l_pos.y},
+					{"169x", (int)fcalf_l_pos.x},
+					{"169y", (int)fcalf_l_pos.y},
+					{"170x", (int)ffoot_l_pos.x},
+					{"170y", (int)ffoot_l_pos.y}
+				}));
+		}
+		
 
 
 		//DrawSkeleton_manual(mesh, false);
@@ -1049,20 +1092,50 @@ void App::Playerloop(json& data)
 
 		if (playerCurrGunIdx == 0xffffffff)
 			return;
-		/*if (playerCurrGunIdx == 4)
+		if (playerCurrGunIdx == 4)
 			return;
-		*/
-		//cout << playerCurrGunIdx << endl;
+		
 		bool aimbotKeypress = false;
-		if (dr->GetKeystate(VK_LBUTTON))
+
+		bool MouseLeftClick = dr->GetKeystate(VK_LBUTTON);
+		bool MouseX1Click = dr->GetKeystate(VK_XBUTTON1);
+		bool MouseX2Click = dr->GetKeystate(VK_XBUTTON2);
+		bool LctrlPress = dr->GetKeystate(VK_LCONTROL);
+		
+		if (MouseLeftClick)
 			aimbotKeypress = true;
-		if (dr->GetKeystate(VK_XBUTTON1))
+		if (MouseX1Click)
 			aimbotKeypress = true;
-		if (dr->GetKeystate(VK_XBUTTON2))
+		if (MouseX2Click)
 			aimbotKeypress = true;
+
+		if (LctrlPress)
+			aimbotKeypress = false;
+
+		if ((!MouseLeftClick && !MouseX1Click && !MouseX2Click) || LctrlPress) {
+			SavedAimbottargetaddr = 0;
+			aimbotstarttime = 0;
+		}
 
 		if (!aimbotKeypress)
 			return;
+
+		/*if (Aimbottargetaddr != 0) {
+			uint64_t  Aimbotmesh = 0;
+			dr->RPM(g_pid, &Aimbotmesh, Aimbottargetaddr + oMesh, 8);
+			if (GetHealth(Aimbottargetaddr) == 0.f)
+			{
+				aimbotendtime = GetTickCount64();
+				aimbotstarttime = aimbotendtime + 350;
+				Aimbottargetaddr = 0;
+			}
+			if (!isvisible(Aimbotmesh))
+			{
+				Aimbottargetaddr = 0;
+			}
+		}*/
+
+
 
 
 
@@ -1082,6 +1155,21 @@ void App::Playerloop(json& data)
 					TargetX = -1;
 			}
 
+			if (AimbotPredicScreenPos.y > (s_height / 2)) {
+				caly = -((s_height / 2) - AimbotPredicScreenPos.y);
+				TargetY = caly / aimspeed;
+
+				if (TargetY > 0.125 && TargetY < 1)//aimspeed)
+					TargetY = 1;
+			}
+			if (AimbotPredicScreenPos.y < (s_height / 2)) {
+				caly = AimbotPredicScreenPos.y - (s_height / 2);
+				TargetY = caly / aimspeed;
+				if (TargetY < -0.125 && TargetY > -1)//-1 * aimspeed)
+					TargetY = -1;
+
+			}
+			TargetY = 0;
 			dr->mouse_event(TargetX, TargetY, 0);
 		}
 	}

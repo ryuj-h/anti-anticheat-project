@@ -9,6 +9,7 @@ App* app;
 
 using namespace std;
 
+/*
 #ifdef _WINDLL
 bool ErasePE(HMODULE hDLL) {
     uint8_t RandBytes[0x1000];
@@ -89,3 +90,12 @@ int main()
         app->Tick();
 }
 #endif
+*/
+
+int main()
+{
+    app = new App();
+    app->Init();
+    while (true)
+        app->Tick();
+}

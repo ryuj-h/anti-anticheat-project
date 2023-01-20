@@ -1,27 +1,31 @@
 #pragma once
 
-#define ida_base 0x00007FF75F520000
+#define ida_base 0x00007FF7A0BB0000
 
-#define ft_decrypt 0x7FF767115128 - ida_base
+#define ft_decrypt 0x7FF7A87FA628 - ida_base
 //48 8B 5C 24 ? 48 89 5C 24 ? 41
 
-#define o_UWorld 0x7FF76871C300 - ida_base
+#define o_UWorld 0x7FF7A9E28F60 - ida_base
 //E8 ? ? ? ? 48 3B F0 75 15
 
-#define o_Level 0x8A0
+//48 8D 15 ? ? ? ? E8 ? ? ? ? 48 8B F0 49
+
+#define o_Level 0x50
 //E8 ? ? ? ? 84 C0 74 11 40 B6 
 //E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 45 32 FF 45 
 
-#define o_Actor 0x0C0
+#define o_Actor 0x230
 //48 89 5C 24 ? 57 48 83 EC 30 83 3D ? ? ? ? ? 48 
 //mov     rdx, [rcx + 220h]
 //여기서 오프셋 획득하고 핵스레이 돌림
 //첫번째 if문에 있는거가 복호화 함수
 
-#define o_GameInstance 0x7A8
+#define o_GameInstance 0x338
 //E8 ? ? ? ? 48 89 44 24 ? 48 8B C8 E8 ? ? ? ? 48 8D
+//E8 ? ? ? ? 48 89 45 10 48 8D 58
 
-#define o_LocalPlayerArray 0xB8
+
+#define o_LocalPlayerArray 0xB0
 /*
 75 08 49 8B CC E8 ? ? ? ? 44
 
@@ -32,11 +36,12 @@ LABEL_98:
 */
 //48 8B C4 44 88 40 18 F3
 //E8 ? ? ? ? 44 38 35 ? ? ? ? 74 4D
+//E8 ? ? ? ? 80 3D ? ? ? ? ? 74 42 
 
 #define o_PlayerController 0x38    
 //E8 ? ? ? ? 84 C0 74 3F 8B 84 
 
-#define o_Gnames 0x7FF768901B90 - ida_base
+#define o_Gnames 0x7FF7AA00D758 - ida_base
 //48 8B 0D ? ? ? ? 4C 8B C9 
 
 //E8 ? ? ? ? 85 C0 0F 85 ? ? ? ? 48 8D 4D E8 
@@ -65,18 +70,20 @@ if ( !(unsigned __int8)sub_7FF71C65C51C(*(_QWORD *)(v1 + 456))
 
 */
 
+//41 B0 01 48 8B 97 ? ? ? ? 49 
 
-#define o_GNamesChunkSize 0x4160
+#define o_GNamesChunkSize 0x3EF4
 //c1 ? ? 8b ? c1 ? 1f 03 ? 69 ? ? ? ? ? 44 2b f8
 
-#define oActor_ID 0xC 
+#define oActor_ID 0x8  
 //E8 ? ? ? ? 90 88 9D
+//E8 ? ? ? ? 90 49 8B D4 48 8D 8D 
 
-#define oRootcompPosition 0x240 
+#define oRootcompPosition 0x220 
 //0F 10 88 ? ? ? 00 0f 28 c1
 
 
-#define oRootcompRotation 0x2a0
+#define oRootcompRotation 0x290 // no upd
 /*
 F2 41 0F 10 81 ?? ?? 00 00
 조온나나오는애들
@@ -106,7 +113,7 @@ line 77
     }
 */
 
-#define oMesh 0x528
+#define oMesh 0x458
 //sdk
 // ACharacter
 // Mesh
@@ -132,6 +139,8 @@ if ( result )
 
 
 */
+//E8 ? ? ? ? 48 8B D0 4C 8B 8C 24 ? ? ? ? 4C 8D 84
+
 
 #define oBoneIndex 0xAF0//0x0AE0 //no upd
 //version:16.2.6.3
@@ -140,21 +149,31 @@ if ( result )
 //TslGame.exe+2AC385:
 //TslGame.exe+2579D9:
 
-#define oComponentToWorld 0x230//0x360 //둘중에 낮은거 
+#define oComponentToWorld 0x210//0x360 //둘중에 낮은거  
 //0F 10 99 ? ? ? ? 48 8B C2 
 
 
 
-#define o_Cameramanager 0x4B0
+#define o_Cameramanager 0x4A8
 //APlayerController
 // PlayerCameraManager
 //48 8B B9 ? ? ? ? 48 85 FF 74 4A 
-
+// 
+//C1 E8 1D A8 01 0F 85 ? ? ? ? 49 8B 86 ? ? ? ? 4C 8B
+/*
+LODWORD(v1) = *(_DWORD *)(v1 + 8) >> 29;
+      if ( !(v1 & 1) )
+      {
+        v1 = *(_QWORD *)(v2 + 0xEA0);
+        v5 = *(_QWORD *)(v1 + 0x4A8); <<
+        if ( v5 )
+        {
+*/
 #define o_CameraCache 0x16C0+ 0x10
 //APlayerCameraManager
 //CameraCache
 
-#define oViewTarget 0x0A30//cameramanager + // ?????
+#define oViewTarget 0x1130//cameramanager + // ?????
 //SDK - Class Engine.PlayerCameraManager
 // ViewTarget
 //48 8B 93 ? ? ? ? 0F 28 D6 48 89
@@ -162,66 +181,129 @@ if ( result )
 //284ED9
 //24F36A
 
-#define o_camera_location  0x1C64//o_CameraCache + 0x594//0x1C64//
+//48 89 87 ? ? ? ? 48 8D 56 10 48 8D 8F
+
+#define o_camera_location  0x464//0x1C64//o_CameraCache + 0x594//0x1C64//
 //F2 0F 10 81 ? ? ? ? F2 41 0F 11 07 
 //Offset["FMinimalViewInfo"].push_back("Location");
 
-#define o_camera_ratation 0x1C40//o_CameraCache + 0x570 //0x1C40
+/*
+48 89 5C 24 ? 48 89 74 24 ? 57 41 56 41 57 48 83 EC 30 48
+v4 = *(_QWORD *)(a1 + 480);
+  v5 = a4;
+  v6 = a3;
+  v7 = a2;
+  v8 = a1;
+  if ( !v4 )
+    v4 = sub_7FF6F4A84F10();
+  if ( (*(_DWORD *)(v4 + 144) - 1) & 0xFFFFFFFD
+    || !qword_7FF6FA014B98
+    || !sub_7FF6F501CFC0((__int64)qword_7FF6FA014B98, v4) )
+  {
+    return 0;
+  }
+  v9 = sub_7FF6F501CFC0((__int64)qword_7FF6FA014B98, v4);
+  sub_7FF6F4E83080(*(_QWORD *)(v9 + 0x4B0), v7, v6); <<<<<<<<<<<<<<< IN
+  v10 = sub_7FF6F501CFC0((__int64)qword_7FF6FA014B98, v4);
+  v11 = off_7FF6F8D16C28(1212073968i64, *(_QWORD *)(v10 + 1096));
+  v12 = off_7FF6F8D16C20(1212073567i64, v11);
+  if ( off_7FF6F8D16C28(1212073567i64, v12) )
+
+  _int64 __fastcall sub_7FF6F4E83080(__int64 a1, __int64 a2, __int64 a3)
+{
+  __int64 result; // rax
+
+  *(_QWORD *)a2 = *(_QWORD *)(a1 + 0x9F8); <<<<<<<<< o_camera_location
+  *(_DWORD *)(a2 + 8) = *(_DWORD *)(a1 + 0xA00);
+  *(_QWORD *)a3 = *(_QWORD *)(a1 + 0x468); <<<<<< o_camera_ratation?
+  result = *(unsigned int *)(a1 + 0x470);
+  *(_DWORD *)(a3 + 8) = result;
+  return result;
+}
+
+
+*/
+
+#define o_camera_ratation 0xA00//0x1C40//o_CameraCache + 0x570 //0x1C40
 //Offset["FMinimalViewInfo"].push_back("Rotation");
 //48 8B 88 ? ? ? ? F2 0F 10 81 ? ? ? ? F2 0F 11 44 
 //F3 0F 10 91 ? ? ? ? F3 0F 5C 97
 
+/*
+ movsd   xmm0, qword ptr [rcx+464h]
+.text:00007FF7A580BD25                 movsd   qword ptr [rsp+30h], xmm0
+.text:00007FF7A580BD2B                 mov     ecx, [rcx+46Ch] <<<<<<<<<<<<<<
 
-#define o_camera_fov 0x1C5C//o_CameraCache + 0x58C//0x1C5C
+*/
+
+
+#define o_camera_fov 0x0A10//o_CameraCache + 0x58C//420h
 //Offset["FMinimalViewInfo"].push_back("FOV");
 //f3 0f 10 81 ? ? ? ? 0f ? ? ? ? ? ? 77 ? f3 0f 10 81 ? ? ? ?
 
-#define oPawn 0x490//0x488
+//F3 0f 10 81 ? ? ? ? 0f ? ? ? ? ? 77 ? f3 0f 10 81 ? ? ? ?
+
+
+#define oPawn 0x488//0x488
 //APlayerController
 //Engine.PlayerController
 //AcknowledgedPawn
 //83 65 ? ? 48 8b 8f ? ? 00 00 48 83
 //Force Feedback - Enabled: %s LL: %.2f LS: %.2f RL: %.2f RS: %.2f
 
-#define oActor_Rootcomp 0x250
+#define oActor_Rootcomp 0x340
 //sdk
 // AActor
 // RootComponent
 //E8 ? ? ? ? 48 8B C8 E8 ? ? ? ? 48 85 C0 74 16 4C
+//E8 ? ? ? ? 4C 8B F0 48 8B D0 48 8B CB E8 ? ? ? ? 48 
 
-#define oTeam 0xF20 
+
+#define oTeam 0x1AE8 
 //TslGame.TslCharacter
 //LastTeamNum
 //8B BA ? ? ? ? 83 FF 
 
-#define oLastSubmitTime 0x0778
-#define oLastRenderTimeOnScreen 0x0780
+//E8 ? ? ? ? 8B F0 83 F8 FF 75 0C 
 
-#define oLastRenderingTime 0x77C
+#define oLastSubmitTime 0x768//0x0778 
+#define oLastRenderTimeOnScreen 0x770//0x0780 
+
+#define oLastRenderingTime 0x76C//0x77C 
 //Engine.PrimitiveComponent
 //UPrimitiveComponent
 //LastRenderTime
 //F3 0F 10 83 ? ? ? ? 0F 2F F0 73
 
-#define oViewTarget 0x0A30//cameramanager + // ?????
-//SDK - Class Engine.PlayerCameraManager
-// ViewTarget
-//48 8B 93 ? ? ? ? 0F 28 D6 48 89
-//48 89 87 ? ? ? ? 49 8D 56 
-//284ED9
-//24F36A
 
 #define oHealth  0x870
 //E8 ? ? ? ? 84 C0 75 0A B8 ? ? ? ? E9 ? ? ? ? 48
 
-#define oGroggyHealth  0x1C78
+#define oGroggyHealth  0x1BEC
 
-#define oMeshAnimScriptInstance 0x0C90 
+#define oMeshAnimScriptInstance 0xC80//0x0C90  
 //USkeletalMeshComponent
 //Engine.SkeletalMeshComponent
 //AnimScriptInstance
 //48 8B 9B ? ? ? ? 48 85 DB 75 10 
 //16.1.6.5 +c
+
+//E8 ? ? ? ? 48 85 C0 74 2B 48 0F
+
+/*
+
+v1 = *(_QWORD *)(a1 + 0x558);
+  if ( v1 && (v2 = sub_7FF6F4B06CB0(v1), (v3 = v2) != 0) && (unsigned __int8)sub_7FF6F0F7C1F0(v2) )
+    result = v3;
+  else
+    result = 0i64;
+  return result;
+
+
+  sub_7FF6F4B06CB0(v1)
+
+*/
+
 
 #define ocontrol_rotation_cp 0x774 
 //TslGame.TslAnimInstance
@@ -237,8 +319,10 @@ if ( result )
 //TslGame.exe+9B6427
 //TslGame.exe+9B6515
 
+//F3 0F 10 83 ? ? ? ? F3 0F 5C 83 ? ? ? ? F3 0F 5C 9B ? ? ? ? F3 0F 10 93
 
-#define orecoil_ads_rotation_cp  0x9CC
+
+#define orecoil_ads_rotation_cp  0x9cc
 //TslGame.TslAnimInstance
 //RecoilADSRotation_CP
 //F2 0F 11 8B ? ? ? ? F3 0F 11 83 
@@ -246,13 +330,37 @@ if ( result )
 //TslGame.exe + 20892C
 
 /*
+* 이거 아님
 400줄쯤
     *(_QWORD *)(v1 + 0x9D4) = (unsigned __int128)_mm_unpacklo_ps((__m128)*(unsigned int *)(v1 + 4776), v79); <<
     *(_DWORD *)(v1 + 2524) = v80;
 F3 0F 5C 8B ? ? ? ? 48 8D
 */
 
-#define olean_left_alpha_cp 0x0DDC  
+/*
+48 8B 8B ? ? ? ? 0F 14 CA F2
+
+*(_DWORD *)(v3 + 4828) = v17.m128_i32[0];
+      v25 = v17;
+      v26 = *(float *)(v3 + 4820);
+      v27 = *(_QWORD *)(v3 + 1464);
+      *(_QWORD *)(v3 + 0x9CC) = (unsigned __int128)_mm_unpacklo_ps((__m128)*(unsigned int *)(v3 + 4824), v25);<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      *(float *)(v3 + 2516) = v26;
+      LOBYTE(v2) = (*(__int64 (**)(void))(*(_QWORD *)v27 + 1784i64))();
+      if ( (_BYTE)v2 && !*(_BYTE *)(v3 + 1533) )
+      {
+        sub_7FF6F49AB7C0(v3, qword_7FF6F9CB47E8);
+        if ( v26 == 1.0 )
+          LOBYTE(v28) = 1;
+        else
+
+
+
+*/
+
+
+
+#define olean_left_alpha_cp 0x0DE4   
 //TslGame.TslAnimInstance
 //LeanLeftAlpha_CP
 //F3 44 0F 11 BB ? ? ? ? 45 
@@ -260,6 +368,8 @@ F3 0F 5C 8B ? ? ? ? 48 8D
 //TslGame.exe+2A7B5A
 //TslGame.exe+208D5E
 //TslGame.exe+208D73
+//F3 0F 11 83 ? ? ? ? 40 84 ED 74 06
+
 
 #define olean_right_alpha_cp olean_left_alpha_cp + 0x4    
 //TslGame.TslAnimInstance
@@ -268,6 +378,13 @@ F3 0F 5C 8B ? ? ? ? 48 8D
 //16.1.6.5+208D8A
 //TslGame.exe+208DA7:
 //TslGame.exe+208F17
+
+
+
+//여기까지 했음
+
+
+
 
 #define oWeaponProcessor 0x888 
 //TslGame.TslCharacter
@@ -305,11 +422,27 @@ sub_7FF76395E1C0 proc near              ; CODE XREF: sub_7FF75F705A58+154F↑p
 .text:00007FF75F8DC710                 mov     rbx, [rcx+888h] << 888
 
 */
+//0F 2F 05 ? ? ? ? EB 07 0F 2F 05 ? ? ? ? 0F 97 C0 88
+/*
+if ( *(_BYTE *)(v1 + 1496) )
+  {
+    v67 = v66 < 70.0;
+    v68 = v66 == 70.0;
+  }
+  else
+  {
+    v67 = v66 < 110.0;
+    v68 = v66 == 110.0;
+  }
+  *(_BYTE *)(v1 + 1496) = !v67 && !v68;
+  LOBYTE(v48) = 1;
+  v69 = sub_7FF6F169AF10(*(_QWORD *)(v1 + 928), v48);<< 들어가서 위와 동일
 
 
+*/
 
 
-#define oWeaponTrajectoryData 0x1008 
+#define oWeaponTrajectoryData 0x1000 
 //TslGame.TslWeapon_Trajectory
 // WeaponTrajectoryData
 //0F 84 ? ? ? ? 48 8B 83 ? ? ? ? F3 0F 10 88 
@@ -323,6 +456,78 @@ sub_7FF76395E1C0 proc near              ; CODE XREF: sub_7FF75F705A58+154F↑p
 //.text:00007FF7700B478B 48 8B 83 00 10 00 00                                         mov     rax, [rbx + 1000h]<<
 //TslGame.exe+CB478B
 
+
+/*
+//F3 44 0F 10 05 ? ? ? ? 84 C0 74 2D
+//F3 0F 59 05 ? ? ? ? F3 0F 11 83 ? ? ? ? F3 0F 58
+
+       if ( v63 >= 0.0 )
+          v64 = fminf(v63, 1.0);
+        else
+          v64 = 0.0;
+        v65 = v64 * -10.0;
+        *(float *)(v7 + 2016) = v65;
+        v66 = v65 + v65;
+        *(float *)(v7 + 2020) = v66;
+        if ( (unsigned __int8)sub_7FF7A0DF60BC(*(_QWORD *)(v7 + 1472))
+          && *(_BYTE *)(v7 + 2917)
+          && sub_7FF7A565DC4C(*(_QWORD *)(v7 + 1472)) )
+        {
+          v67 = sub_7FF7A565DC4C(*(_QWORD *)(v7 + 1472));
+          LODWORD(v66) = COERCE_UNSIGNED_INT64(sub_7FF7A5D343AC(v67)); <<<<<<<<
+          *(float *)(v7 + 2856) = v66;
+          v68 = sub_7FF7A565DC4C(*(_QWORD *)(v7 + 1472));
+          sub_7FF7A5D340C0(v68);
+          *(float *)(v7 + 2860) = v66;
+        }
+
+ v49 = (float)(*(float *)(v1 + 1920) - 2.0) * 0.125;
+  if ( v49 >= 0.0 )
+    v50 = fminf(v49, 1.0);
+  else
+    v50 = 0.0;
+  v51 = v50 * -10.0;
+  *(float *)(v1 + 2016) = v51;
+  v52 = v51 + v51;
+  *(float *)(v1 + 2020) = v52;
+  if ( (unsigned __int8)sub_7FF6F16A91A0(*(_QWORD *)(v1 + 1464))
+    && *(_BYTE *)(v1 + 2917)
+    && sub_7FF6F169B6B0(*(_QWORD *)(v1 + 0x5B8)) )
+  {
+    v53 = sub_7FF6F169B6B0(*(_QWORD *)(v1 + 0x5B8));
+    *(_DWORD *)(v1 + 2856) = COERCE_UNSIGNED_INT64(sub_7FF6F226E1E0(v53)); <<<<<<<
+    v54 = sub_7FF6F169B6B0(*(_QWORD *)(v1 + 0x5B8));
+    v52 = sub_7FF6F226DD00(v54);
+    *(float *)(v1 + 2860) = v52;
+  }
+
+
+
+
+  __int64 v1; // rbx
+  float *v2; // rax
+  float v3; // xmm1_4
+  float v4; // xmm2_4
+  float v5; // xmm0_4
+  float v6; // xmm2_4
+
+  v1 = a1;
+  if ( !(*(__int64 (**)(void))(*(_QWORD *)a1 + 1872i64))() )
+    return *(float *)(v1 + 4040);
+  v2 = *(float **)(v1 + 0x1000); <<<<<<<<<<<<<<<<<<<<<<<
+  v3 = v2[39];
+  v4 = v2[40];
+  if ( v3 == v4 )
+    v5 = v2[39];
+  else
+    v5 = (float)(*(float *)(v1 + 2632) - v3) / (float)(v4 - v3);
+  v6 = 0.0;
+  if ( v5 >= 0.0 )
+    v6 = fminf(v5, 1.0);
+  return (float)((float)(v2[42] - v2[41]) * v6) + v2[41];
+}
+
+*/
 
 
 
@@ -436,7 +641,7 @@ signed __int64 __fastcall sub_7FF75F8DC950(__int64 a1, char a2)
 */
 
 
-#define oVehicleRiderComponent 0x1D08 
+#define oVehicleRiderComponent 0x1CC8  
 //TslGame.TslCharacter
 //VehicleRiderComponent
 //48 8B 89 ? ? ? ? 48 8D 54 24 ? E8 ? ? ? ? 48 8B 54
@@ -446,7 +651,10 @@ signed __int64 __fastcall sub_7FF75F8DC950(__int64 a1, char a2)
 //TslGame.exe+408C534:
 //TslGame.exe+287C3D:
 
-#define oLastVehiclePawn 0x0260        
+//E8 ? ? ? ? 84 C0 74 14 48 8B CB E8 ? ? ? ? 48 8B D0 
+
+
+#define oLastVehiclePawn 0x260        
 //TslGame.VehicleRiderComponent
 // LastVehiclePawn
 //48 3B AE ? ? ? ? 74 
@@ -456,14 +664,56 @@ signed __int64 __fastcall sub_7FF75F8DC950(__int64 a1, char a2)
 //TslGame.exe+B72A16:
 //TslGame.exe+B716C7:
 
-#define oSeatIndex 0x0228      
+
+//E8 ? ? ? ? 48 85 C0 74 1F 4C 8B 00
+/*
+
+if ( v3 != *(_QWORD *)(v1 + 0x250) ) <<<
+            {
+              v9 = sub_7FF6F2C19F50();
+              v10 = sub_7FF6F3AABB10(v3, v9);
+              if ( v10 )
+              {
+                v11 = 0i64;
+                v12 = sub_7FF6F1A9EB80(v3);
+*/
+
+
+#define oSeatIndex 0x228      
 //TslGame.VehicleRiderComponent
 // SeatIndex
 //39 99 ? ? ? ? 7D 0D 33 
 //TslGame.exe+2EAF3B
 //TslGame.exe+2EAF6F
+/*
+E8 ? ? ? ? 48 83 B8 ? ? ? ? ? 0F 84 ? ? ? ? 48
+들어가서
 
-#define oComponentVelocity 0x300 //4d0
+__int64 __fastcall sub_7FF6F2166FB0(__int64 a1, __int64 a2, __int64 a3, __int64 a4)
+{
+  __int64 v4; // rbx
+  __int64 v5; // rax
+  __int64 v6; // rax
+  __int64 result; // rax
+
+  v4 = a1;
+  if ( *(_DWORD *)(a1 + 536) >= 0 <<<<<<<<<<<<<<<<<
+    && (v5 = sub_7FF6F491CA10(*(_QWORD *)(a1 + 424), a2, a3, a4), (v6 = sub_7FF6F1A9EB80(v5)) != 0) )
+  {
+    result = (*(__int64 (__fastcall **)(__int64, _QWORD))(*(_QWORD *)v6 + 1048i64))(v6, *(unsigned int *)(v4 + 536));
+  }
+  else
+  {
+    result = 0i64;
+  }
+  return result;
+}
+
+*/
+
+
+//여기부터 안쓴다 걍 개같네
+#define oComponentVelocity 0x2A0 //4d0
 //Engine.SceneComponent
 // ComponentVelocity
 //F2 0F 10 87 ? ? ? ? F2 0F 11 03 8B 
@@ -533,7 +783,7 @@ F5
 
 
 
-#define oEquippedWeapons oCurrWeapoinIdx - 0x11 //0x2f8  //oCurrWeapoinIdx - 0x101
+#define oEquippedWeapons 0x2f8//oCurrWeapoinIdx - 0x11 //0x2f8  //oCurrWeapoinIdx - 0x101
 //brute force
 //TslGame.WeaponProcessorComponent
 // EquippedWeapons
