@@ -1,6 +1,7 @@
 #include "App.h"
 
 std::map <uint64_t, EnemyData*> g_EnemyInfo;
+std::map <uint64_t, std::queue<EnemyDataPast*>*> g_EnemyPastInfo;
 
 void App::Init() {
 	system("pause");
@@ -92,22 +93,49 @@ void App::Tick()
 
 	int ttime = connectiontimePlus;
 
-	if (m_CURL->getReadyState()) {
+	/*if (m_CURL->getReadyState()) {
 		auto dd = data.dump();
 		m_CURL->sendData(dd);//POST 요청
 		ULONG64 tickcount3 = GetTickCount64();
-	}
+	}*/
 
-	/*
+	
 	jsonqueue.push(make_pair(t, data));
 
 	ULONG64 tickcount2 = GetTickCount64();
-	if (!jsonqueue.empty()) {
+	
+	uint64_t ticktime;// = firstjson.first;//데이터가 처리될 때의 시간
+	bool found = false;
+	json jsondata;// = firstjson.second;//처리된 json 데이터
+
+	while (true) {
+		if (!jsonqueue.empty()) {
+			auto firstjson = jsonqueue.front();
+			ticktime = firstjson.first;
+			if (tickcount2 - ticktime >= connectiontimePlus) {
+				found = true;
+				jsondata = firstjson.second;
+				jsonqueue.pop();
+			}
+			else {
+				break;
+			}
+		}
+		else
+			break;
+	}
+	if (found){
+		if (m_CURL->getReadyState()) {
+			auto dd = jsondata.dump();
+			m_CURL->sendData(dd);//POST 요청
+		}
+	}
+	/*if (!jsonqueue.empty()) {
 		auto firstjson = jsonqueue.front();
 		auto ticktime = firstjson.first;//데이터가 처리될 때의 시간
 		auto jsondata = firstjson.second;//처리된 json 데이터
 
-		if (tickcount2 - ticktime >  connectiontimePlus){//일정 시간이 지났다면
+		if (tickcount2 - ticktime >=  connectiontimePlus){//일정 시간이 지났다면
 			jsonqueue.pop();//큐에서 pop
 			if (m_CURL->getReadyState()) {
 				auto dd = jsondata.dump();
@@ -649,6 +677,8 @@ void App::Playerloop(json& data)
 	}
 	//playerentity = g_aPawn;
 	Vector3 sway;
+	Vector3 recoil;
+
 	if (playerentity) {
 		dr->RPM(g_pid, &playerteam, playerentity + oTeam, 4);
 		dr->RPM(g_pid, &playermesh, playerentity + oMesh, 8);
@@ -680,7 +710,7 @@ void App::Playerloop(json& data)
 
 		dr->RPM(g_pid, &sway, AnimScript + ocontrol_rotation_cp, 12);
 
-		Vector3 recoil;
+		
 		dr->RPM(g_pid, &recoil, AnimScript + orecoil_ads_rotation_cp, 12);
 
 		float lla;
@@ -792,7 +822,7 @@ void App::Playerloop(json& data)
 	AimbotPredicScreenPos = { 0,0,0 };
 	float distancecehck = 999999;
 
-	float aimspeed = 10.0f;
+	float aimspeed = 4.5f;
 	float minaimspeed = 3.0f;
 
 	int calx;
@@ -904,22 +934,88 @@ void App::Playerloop(json& data)
 		ffoot_l_pos = WorldToScreen(ffoot_l_pos);
 
 		uint64_t currtick = GetTickCount64();
-		if (g_EnemyInfo.find(entity) == g_EnemyInfo.end()){
+
+		if (g_EnemyInfo.find(entity) == g_EnemyInfo.end()) {
 			g_EnemyInfo.emplace(entity, new EnemyData());
 		}
-		else
-		{
+		else {
 			auto enemyinfo = g_EnemyInfo[entity];
 			if (currtick - g_EnemyInfo[entity]->lastcheck >= 200) {
 				g_EnemyInfo[entity]->lastcheck = currtick;
-				g_EnemyInfo[entity]->Velocity = rootcompbaseposition - g_EnemyInfo[entity]->lastposition;
+				g_EnemyInfo[entity]->VelocityBefore200ms = g_EnemyInfo[entity]->Velocity;
+				g_EnemyInfo[entity]->Velocity = baseposition - g_EnemyInfo[entity]->lastposition;
 				g_EnemyInfo[entity]->Velocity = g_EnemyInfo[entity]->Velocity * 5.f;
-				g_EnemyInfo[entity]->lastposition = rootcompbaseposition;
+				g_EnemyInfo[entity]->lastposition = baseposition;
 			}
 		}
 
+		Vector3 Aiminglocation;
+		Vector3 ActorBaseLoc = GetBoneWithRotation(mesh, 0);
+		Vector3 Velocity{ 0,0,0 };
+
+		Velocity = g_EnemyInfo[entity]->Velocity;
+		float SpeedAvg = Velocity.Size();
+		float distancefromBase = ActorBaseLoc.Distance(CameraCache.POV.Location) / 100.0f;
+		int aiming_position = FemaleBones::fforehead;
+		if (distancefromBase < 50.0f) {
+			aiming_position = FemaleBones::fforehead;//머리
+		}
+		else {
+			if (dr->GetKeystate(VK_LSHIFT)) {
+				aiming_position = FemaleBones::fforehead;
+			}
+			else {
+				if (SpeedAvg > 1.0f) {//움직일 때
+					aiming_position = FemaleBones::fneck_01;
+				}
+				else {//가만히 있을떄
+					if (entityhealth > 60.f)
+						aiming_position = FemaleBones::fforehead;//머리
+					else
+						aiming_position = FemaleBones::fspine_03;
+				}
+			}
+		}
+
+		if (recoil.Size() > 0.125) {
+			aiming_position = FemaleBones::fneck_01;
+		}
+
+
+		Aiminglocation = GetBoneWithRotation(mesh, aiming_position);
+
+
+
+		EnemyDataPast* pastenemydata = nullptr;//200ms 전의 상태 데이터
+		if (g_EnemyPastInfo.find(entity) == g_EnemyPastInfo.end()) {
+			g_EnemyPastInfo.emplace(entity, new std::queue<EnemyDataPast*>());
+		}
+		else {
+			auto pastqueue = g_EnemyPastInfo[entity];
+
+			//업데이트 한 정보를 push
+			pastqueue->push(new EnemyDataPast(currtick, baseposition, Velocity, Aiminglocation));
+
+			if (!pastqueue->empty()){
+				//사용할 정보를 pop
+				while (true) {
+					pastenemydata = pastqueue->front();
+					if (currtick - pastenemydata->Ticktime >= 200) {
+						delete(pastenemydata);
+						pastqueue->pop();
+					}
+					else {
+						break;
+					}
+				}
+			}
+		}
+		
+
+		
+
 		if (bVisible){
-			uint64_t VehicleRiderComponent = 0;
+			/*uint64_t VehicleRiderComponent = 0;
 			dr->RPM(g_pid, &VehicleRiderComponent, entity + oVehicleRiderComponent, 8);
 
 			uint64_t LastVehiclePawn = 0;
@@ -931,24 +1027,27 @@ void App::Playerloop(json& data)
 			Vector3 Velocity{ 0,0,0 };
 			
 			Velocity = g_EnemyInfo[entity]->Velocity;
-			/*if (Seatindex == -1)
+			if (Seatindex == -1)
 				dr->RPM(g_pid, &Velocity, entityrootcomp + oComponentVelocity, 12);
 			else 
 				dr->RPM(g_pid, &Velocity, LastVehiclePawn + oReplicatedMovement, 12);
 				*/
 
 
-			Vector3 Aiminglocation;
-			Vector3 ActorBaseLoc = GetBoneWithRotation(mesh, 0);
 
+			/*Vector3 Aiminglocation;
+			Vector3 ActorBaseLoc = GetBoneWithRotation(mesh, 0);
+			Vector3 Velocity{ 0,0,0 };
+
+			Velocity = g_EnemyInfo[entity]->Velocity;
 			float SpeedAvg = Velocity.Size();
 			float distancefromBase = ActorBaseLoc.Distance(CameraCache.POV.Location) / 100.0f;
 			int aiming_position = FemaleBones::fforehead;
-			if (distancefromBase < 50.0f){
+			if (distancefromBase < 50.0f) {
 				aiming_position = FemaleBones::fforehead;//머리
 			}
 			else {
-				if (dr->GetKeystate(VK_LSHIFT)){
+				if (dr->GetKeystate(VK_LSHIFT)) {
 					aiming_position = FemaleBones::fforehead;
 				}
 				else {
@@ -965,8 +1064,33 @@ void App::Playerloop(json& data)
 			}
 
 			Aiminglocation = GetBoneWithRotation(mesh, aiming_position);
+			*/
 
-			float TravelTime = distance / playerGunSpeed;
+
+			if (pastenemydata) {
+				float TravelTime = distance / playerGunSpeed;
+				float BulletDrop = 0;
+
+				Vector3 PredictedPos{ 0, 0, 0 };
+				PredictedPos.x = pastenemydata->AimbotWorldPos.x + (Velocity.x * (TravelTime + 0.2f));
+				PredictedPos.y = pastenemydata->AimbotWorldPos.y + (Velocity.y * (TravelTime + 0.2f));
+				PredictedPos.z = pastenemydata->AimbotWorldPos.z;
+				//PredictedPos.z = Aiminglocation.z + (Velocity.z * flTime) + fabs(BulletDrop); //+ (9.80665f * 100 / 2 * flTime * flTime);
+
+				Vector3 headposwts = WorldToScreenAim(PredictedPos, sway);//WorldToScreen(PredictedPos);
+				float distance1 = SCenter.Distance(headposwts);//Scenter.Distance(headposwts);
+
+
+				if (distance1 < distancecehck) {
+					AimbotPredicWorldPos = PredictedPos;
+					AimbotPredicScreenPos = headposwts;
+					distancecehck = distance1;
+					AimbotTartgetExist = true;
+				}
+			}
+
+			 //원본
+			/*float TravelTime = distance / playerGunSpeed;
 			float BulletDrop = 0;
 
 			Vector3 PredictedPos{ 0, 0, 0 };
@@ -977,18 +1101,17 @@ void App::Playerloop(json& data)
 
 			Vector3 headposwts = WorldToScreenAim(PredictedPos, sway);//WorldToScreen(PredictedPos);
 			float distance1 = SCenter.Distance(headposwts);//Scenter.Distance(headposwts);
-
+			
 
 			if (distance1 < distancecehck){
 				AimbotPredicWorldPos = PredictedPos;
 				AimbotPredicScreenPos = headposwts;
 				distancecehck = distance1;
 				AimbotTartgetExist = true;
-			}
+			}*/
 		}
 
-		if (distance >= 200.f)
-		{
+		if (distance >= 200.f) {
 			fforepos = { -21,-30,0 };
 			fHeadpos = { -220,-30,0 };
 			fneck_01pos = { -240,-30,0 };

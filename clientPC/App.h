@@ -22,11 +22,34 @@ typedef struct EnemyData
 	Vector3 lastposition;
 	uint64_t lastcheck;
 	Vector3 Velocity;
+	Vector3 VelocityBefore200ms;
+	Vector3 PositionBefore200ms;
+	Vector3 AimbotWorldPos;
 
 	EnemyData()
 		: lastposition(0,0,0)
 		, lastcheck(0)
 		, Velocity(0,0,0)
+		, VelocityBefore200ms(0,0,0)
+		, PositionBefore200ms(0,0,0)
+		, AimbotWorldPos(0,0,0)
+	{
+
+	}
+};
+
+typedef struct EnemyDataPast
+{
+	uint64_t Ticktime;
+	Vector3 Position;
+	Vector3 Velocity;
+	Vector3 AimbotWorldPos;
+
+	EnemyDataPast(uint64_t tick, Vector3 position, Vector3 velocity, Vector3 aimbotWorldPos)
+		: Ticktime(tick)
+		, Position(position)
+		, Velocity(velocity)
+		, AimbotWorldPos(aimbotWorldPos)
 	{
 
 	}
@@ -80,7 +103,7 @@ private:
 
 	std::queue <std::pair<ULONG64, json>> jsonqueue;
 	int conectiontime = 5;
-	int connectiontimePlus = 5;
+	int connectiontimePlus = 1;
 	int connectiontimeEnum;
 
 	uint64_t Tmpadd;
