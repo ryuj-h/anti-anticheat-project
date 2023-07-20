@@ -80,11 +80,15 @@ public:
 	DDMATRIX Matrix(Vector3 rot, Vector3 origin);
 	Vector3 WorldToScreenAim(Vector3 WorldLocation, Vector3 Rot);
 	Vector3 WorldToScreen(Vector3 WorldLocation);
+	Vector3 ScreenToWorld(float screenX, float screenY);
 	DDMATRIX MatrixMultiplication(DDMATRIX pM1, DDMATRIX pM2);
 	FTransform GetBoneIndex(uint64_t mesh, int index);
 	Vector3 GetBoneWithRotation(uint64_t mesh, int id);
 	void skel_draw(Vector3 p1, Vector3 c1, bool isvisible);
 	void DrawSkeleton_manual(uint64_t mesh, bool isvisible);
+	bool isvisible(uint64_t mesh);
+	float GetHealth(uint64_t actorptr);
+	float GetGroggyHealth(uint64_t actorptr);
 	void Playerloop(json& data);
 	void MainTick(json& data);
 
@@ -103,8 +107,14 @@ private:
 
 	std::queue <std::pair<ULONG64, json>> jsonqueue;
 	int conectiontime = 5;
-	int connectiontimePlus = 1;
+	int connectiontimePlus = 0;
 	int connectiontimeEnum;
+
+
+	float Setaimspeed = 6.5f;
+
+	int predx = -1;
+	int predy = -1;
 
 	uint64_t Tmpadd;
 #define DecryptData(argv)	fnDecryptFunctoin(Tmpadd, argv)
@@ -169,7 +179,14 @@ private:
 	bool key_ctrl;
 	bool key_O;
 	bool key_P;
+	bool key_numplus;
+	bool key_numminus;
+	bool key_insert;
+
+	bool aimbot = false;
+
 	uint64_t aimbotstarttime;
+	uint64_t Aimbottargetaddr;
 	uint64_t SavedAimbottargetaddr;
 	uint64_t aimbotendtime;
 

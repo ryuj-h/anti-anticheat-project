@@ -41,6 +41,8 @@ typedef struct
 
 typedef struct
 {
+	int hp;
+
 	int visible;
 	int distance;
 
@@ -101,5 +103,11 @@ typedef struct
 	DrawBox drawbox[1000];
 	Player player[1000];
 
+	int aimbot;
 	int latency;
+	int aimspeed;
+	int predx;
+	int predy;
+
+	Player abplayer;
 }SharedSection;

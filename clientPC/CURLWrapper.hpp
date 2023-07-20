@@ -43,8 +43,14 @@ public:
 
 			curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 0L);
 			curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
-			curl_easy_setopt(m_curl, CURLOPT_URL, "http://118.34.63.219:17892/");//"http://localhost:17891/");//"http://118.34.63.219:17891/");
-			//curl_easy_setopt(m_curl, CURLOPT_URL, "http://localhost:17891/");//"http://localhost:17891/");//"http://118.34.63.219:17891/");
+			curl_easy_setopt(m_curl, CURLOPT_URL, "http://172.30.1.40:17892/");
+												//"http://169.254.218.104:17892/");
+												  // "http://172.30.1.60:17892/"); 
+												  //"http://118.34.63.219:17892/");
+												  //"http://localhost:17891/");
+												  //"http://118.34.63.219:17891/");			
+												  //curl_easy_setopt(m_curl, CURLOPT_URL, "http://localhost:17891/");//"http://localhost:17891/");
+												  //"http://118.34.63.219:17891/");
 			curl_easy_setopt(m_curl, CURLOPT_CUSTOMREQUEST, "POST");
 			// curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 30L);
 			curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, write_data);

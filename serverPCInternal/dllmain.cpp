@@ -52,8 +52,21 @@ void handle_post(http_request request)
             //wcout << jsonval;
             //auto status = v.at(U("status")).as_string();
 
+            auto aimbot = v.at(U("ab")).as_integer();
+            drawsection.aimbot = aimbot;
+
+            auto aimspeed = v.at(U("aimspeed")).as_integer();
+            drawsection.aimspeed = aimspeed;
+
             auto latency = v.at(U("lat")).as_integer();
             drawsection.latency = latency;
+
+            auto predx = v.at(U("predx")).as_integer();
+            drawsection.predx = predx;
+
+            auto predy = v.at(U("predy")).as_integer();
+            drawsection.predy = predy;
+
 
             auto lines = v.at(U("ln")).as_array();
 
@@ -83,6 +96,7 @@ void handle_post(http_request request)
             auto players = v.at(U("Players")).as_array();
             for (int i = 0; i < players.size(); i++) {
 
+                drawsection.player[i].hp = players[i].at(U("hp")).as_integer();
                 //vis
                 drawsection.player[i].visible = players[i].at(U("vis")).as_integer();
                 drawsection.player[i]._minimapx = players[i].at(U("minix")).as_integer();
@@ -132,6 +146,50 @@ void handle_post(http_request request)
                 drawsection.player[i]._170x = players[i].at(U("170x")).as_integer();
                 drawsection.player[i]._170y = players[i].at(U("170y")).as_integer();
             }
+
+
+            auto abplayer = v.at(U("abPlayer")).as_object();
+
+            if (true) {
+                drawsection.abplayer.visible = abplayer.at(U("15x")).as_integer();
+                drawsection.abplayer._15x = abplayer.at(U("15x")).as_integer();
+                drawsection.abplayer._15y = abplayer.at(U("15y")).as_integer();
+                drawsection.abplayer._6x = abplayer.at(U("6x")).as_integer();
+                drawsection.abplayer._6y = abplayer.at(U("6y")).as_integer();
+                drawsection.abplayer._5x = abplayer.at(U("5x")).as_integer();
+                drawsection.abplayer._5y = abplayer.at(U("5y")).as_integer();
+                drawsection.abplayer._115x = abplayer.at(U("115x")).as_integer();
+                drawsection.abplayer._115y = abplayer.at(U("115y")).as_integer();
+                drawsection.abplayer._116x = abplayer.at(U("116x")).as_integer();
+                drawsection.abplayer._116y = abplayer.at(U("116y")).as_integer();
+                drawsection.abplayer._117x = abplayer.at(U("117x")).as_integer();
+                drawsection.abplayer._117y = abplayer.at(U("117y")).as_integer();
+                drawsection.abplayer._88x = abplayer.at(U("88x")).as_integer();
+                drawsection.abplayer._88y = abplayer.at(U("88y")).as_integer();
+                drawsection.abplayer._89x = abplayer.at(U("89x")).as_integer();
+                drawsection.abplayer._89y = abplayer.at(U("89y")).as_integer();
+                drawsection.abplayer._90x = abplayer.at(U("90x")).as_integer();
+                drawsection.abplayer._90y = abplayer.at(U("90y")).as_integer();
+                drawsection.abplayer._1x = abplayer.at(U("1x")).as_integer();
+                drawsection.abplayer._1y = abplayer.at(U("1y")).as_integer();
+                drawsection.abplayer._3x = abplayer.at(U("3x")).as_integer();
+                drawsection.abplayer._3y = abplayer.at(U("3y")).as_integer();
+                drawsection.abplayer._2x = abplayer.at(U("2x")).as_integer();
+                drawsection.abplayer._2y = abplayer.at(U("2y")).as_integer();
+                drawsection.abplayer._174x = abplayer.at(U("174x")).as_integer();
+                drawsection.abplayer._174y = abplayer.at(U("174y")).as_integer();
+                drawsection.abplayer._175x = abplayer.at(U("175x")).as_integer();
+                drawsection.abplayer._175y = abplayer.at(U("175y")).as_integer();
+                drawsection.abplayer._176x = abplayer.at(U("176x")).as_integer();
+                drawsection.abplayer._176y = abplayer.at(U("176y")).as_integer();
+                drawsection.abplayer._168x = abplayer.at(U("168x")).as_integer();
+                drawsection.abplayer._168y = abplayer.at(U("168y")).as_integer();
+                drawsection.abplayer._169x = abplayer.at(U("169x")).as_integer();
+                drawsection.abplayer._169y = abplayer.at(U("169y")).as_integer();
+                drawsection.abplayer._170x = abplayer.at(U("170x")).as_integer();
+                drawsection.abplayer._170y = abplayer.at(U("170y")).as_integer();
+            }
+
             drawsection.playernum = players.size();
             /*auto array = v.at(U("rows")).as_array();
             for (int i = 0; i < array.size(); ++i)
@@ -185,6 +243,10 @@ HRESULT APIENTRY MJPresent(IDirect3DDevice9* pDevice, const RECT* pSourceRect, c
 }
 
 void DrawJsonData(SharedSection& drawsection) {
+
+    s_width = GetSystemMetrics(SM_CXSCREEN);
+    s_height = GetSystemMetrics(SM_CYSCREEN);
+
     for (int i = 0; i < drawsection.linenum; i++) {
 
         render.draw_line(drawsection.drawline[i].x1, drawsection.drawline[i].y1, drawsection.drawline[i].x2, drawsection.drawline[i].y2,
@@ -225,7 +287,7 @@ void DrawJsonData(SharedSection& drawsection) {
 
         static char distancebuffer[1024];
         sprintf(distancebuffer, "[%0.0fm]\0", distance);
-        render.draw_text(basepos.x, basepos.y, distancebuffer, true, ImColor(255, 255, 255, 255), c_renderer::text_normal);
+        render.draw_text(basepos.x, basepos.y, distancebuffer, true,true,true, ImColor(255, 255, 255, 255), c_renderer::text_normal);
         //Draw_Background_String(std::string(distancebuffer), 12.f, basepos.x, basepos.y, 1, 1, 1, 1);
 
         int isvisible = drawsection.player[i].visible;
@@ -244,29 +306,31 @@ void DrawJsonData(SharedSection& drawsection) {
             b = 0.f;
         }
 
-        render.draw_line(fforepos.x, fforepos.y, fHeadpos.x, fHeadpos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(fHeadpos.x, fHeadpos.y, fneck_01pos.x, fneck_01pos.y, ImColor(r, g, b, a), 1.0f);
-        
-        render.draw_line(fneck_01pos.x, fneck_01pos.y, fupperarm_r_pos.x, fupperarm_r_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(fupperarm_r_pos.x, fupperarm_r_pos.y, flowerarm_r_pos.x, flowerarm_r_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(flowerarm_r_pos.x, flowerarm_r_pos.y, fhand_r_pos.x, fhand_r_pos.y, 1.0f);
+        if (false)//skelleton esp
+        {
+            render.draw_line(fforepos.x, fforepos.y, fHeadpos.x, fHeadpos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fHeadpos.x, fHeadpos.y, fneck_01pos.x, fneck_01pos.y, ImColor(r, g, b, a), 1.0f);
 
-        render.draw_line(fneck_01pos.x, fneck_01pos.y, fupperarm_l_pos.x, fupperarm_l_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(fupperarm_l_pos.x, fupperarm_l_pos.y, flowerarm_l_pos.x, flowerarm_l_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(flowerarm_l_pos.x, flowerarm_l_pos.y, fhand_l_pos.x, fhand_l_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fneck_01pos.x, fneck_01pos.y, fupperarm_r_pos.x, fupperarm_r_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fupperarm_r_pos.x, fupperarm_r_pos.y, flowerarm_r_pos.x, flowerarm_r_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(flowerarm_r_pos.x, flowerarm_r_pos.y, fhand_r_pos.x, fhand_r_pos.y, 1.0f);
 
-        render.draw_line(fneck_01pos.x, fneck_01pos.y, fspine_02_pos.x, fspine_02_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(fspine_02_pos.x, fspine_02_pos.y, fspine_01_pos.x, fspine_01_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(fspine_01_pos.x, fspine_01_pos.y, fpelvis_pos.x, fpelvis_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fneck_01pos.x, fneck_01pos.y, fupperarm_l_pos.x, fupperarm_l_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fupperarm_l_pos.x, fupperarm_l_pos.y, flowerarm_l_pos.x, flowerarm_l_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(flowerarm_l_pos.x, flowerarm_l_pos.y, fhand_l_pos.x, fhand_l_pos.y, ImColor(r, g, b, a), 1.0f);
 
-        render.draw_line(fpelvis_pos.x, fpelvis_pos.y, fthigh_r_pos.x, fthigh_r_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(fthigh_r_pos.x, fthigh_r_pos.y, fcalf_r_pos.x, fcalf_r_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(fcalf_r_pos.x, fcalf_r_pos.y, ffoot_r_pos.x, ffoot_r_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fneck_01pos.x, fneck_01pos.y, fspine_02_pos.x, fspine_02_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fspine_02_pos.x, fspine_02_pos.y, fspine_01_pos.x, fspine_01_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fspine_01_pos.x, fspine_01_pos.y, fpelvis_pos.x, fpelvis_pos.y, ImColor(r, g, b, a), 1.0f);
 
-        render.draw_line(fpelvis_pos.x, fpelvis_pos.y, fthigh_l_pos.x, fthigh_l_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(fthigh_l_pos.x, fthigh_l_pos.y, fcalf_l_pos.x, fcalf_l_pos.y, ImColor(r, g, b, a), 1.0f);
-        render.draw_line(fcalf_l_pos.x, fcalf_l_pos.y, ffoot_l_pos.x, ffoot_l_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fpelvis_pos.x, fpelvis_pos.y, fthigh_r_pos.x, fthigh_r_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fthigh_r_pos.x, fthigh_r_pos.y, fcalf_r_pos.x, fcalf_r_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fcalf_r_pos.x, fcalf_r_pos.y, ffoot_r_pos.x, ffoot_r_pos.y, ImColor(r, g, b, a), 1.0f);
 
+            render.draw_line(fpelvis_pos.x, fpelvis_pos.y, fthigh_l_pos.x, fthigh_l_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fthigh_l_pos.x, fthigh_l_pos.y, fcalf_l_pos.x, fcalf_l_pos.y, ImColor(r, g, b, a), 1.0f);
+            render.draw_line(fcalf_l_pos.x, fcalf_l_pos.y, ffoot_l_pos.x, ffoot_l_pos.y, ImColor(r, g, b, a), 1.0f);
+        }
 
         if (1) {
             int x, y;
@@ -274,28 +338,168 @@ void DrawJsonData(SharedSection& drawsection) {
             x = drawsection.player[i]._minimapx;
             y = drawsection.player[i]._minimapy;
             if (x != -1 && y != -1) {
-                render.draw_rect(1628 + 254 * (x / 100.f) / 400.f + 1 - 2, 797 + 254 * (y / 100.f) / 400.f + 1 - 2,
+                //1694 1049
+                render.draw_rect(1437 + (1694 - 1437) * (x / 100.f) / 400.f + 1 - 2, 793 + (1049 - 793) * (y / 100.f) / 400.f + 1 - 2,
+                    3, 3,
+                    ImColor(255, 0, 0, 255));
+
+                render.draw_rect(1437 + (1694 - 1437) * (x / 100.f) / 400.f - 2, 793 + (1049 - 793) * (y / 100.f) / 400.f - 2,
+                    5, 5,
+                    ImColor(0, 0, 0, 255));
+
+                //
+                /*render.draw_rect(1628 + 254 * (x / 100.f) / 400.f + 1 - 2, 797 + 254 * (y / 100.f) / 400.f + 1 - 2,
                     3, 3,
                     ImColor(255, 0, 0, 255));
 
                 render.draw_rect(1628 + 254 * (x / 100.f) / 400.f - 2, 797 + 254 * (y / 100.f) / 400.f - 2,
                     5, 5,
                     ImColor(0, 0, 0, 255));
+            */
             }
         }
 
+        if (true) {
+            if (distance < 400) {
+                float hp = drawsection.player[i].hp;
+                render.draw_rect(basepos.x - 40, basepos.y + 13,
+                    80, 5,
+                    ImColor(0.f, 0.f, 0.f, 0.3f));
+                if (hp > 40.0) {
+                    render.draw_rect(basepos.x - 40 + 1, basepos.y + 13 + 1,
+                        80 * (hp / 100.f) - 2, 5 - 2,
+                        ImColor(1.f, 1.f, 1.f, 0.8f));
+                }
+                else {
+                    render.draw_rect(basepos.x - 40 + 1, basepos.y + 13 + 1,
+                        80 * (hp / 100.f) - 2, 5 - 2,
+                        ImColor(1.f, 0.f, 0.f, 0.8f));
+                }
+                render.draw_rect(basepos.x - 40, basepos.y + 13,
+                    80, 5,
+                    ImColor(0.f, 0.f, 0.f, 1.f));
+            }
+        }
     }
-    //render.draw_text()
 
-    render.draw_rect(1628, 791,
+    /*render.draw_rect(1628, 791,
         261, 261,
         ImColor(255, 255, 255, 255));
+    */
+    /*render.draw_rect(1597, 792,
+        1883-1597, 1050-792,
+        ImColor(255, 255, 255, 255));
+        */
 
 
     int latency = drawsection.latency;
     static char latencybuffer[1024];
     sprintf(latencybuffer, "latency : %d\0", latency);
-    render.draw_text(s_width / 2,0, latencybuffer, true, ImColor(255, 255, 255, 255), c_renderer::text_normal);
+    render.draw_text(s_width / 2,0, latencybuffer, true, true, true, ImColor(255, 255, 255, 255), c_renderer::text_normal);
+
+    /*int aimspeed = drawsection.aimspeed;
+    static char aimspeedbuffer[1024];
+    sprintf(aimspeedbuffer, "aimspeed : %d\0", aimspeed);
+    render.draw_text(s_width / 2, 13, aimspeedbuffer, true, true, true, ImColor(255, 255, 255, 255), c_renderer::text_normal);
+
+    int aimbot = drawsection.aimbot;
+    static char aimbotbuffer[1024];
+    sprintf(aimbotbuffer, "aimbot : %d\0", aimbot);
+    render.draw_text(s_width / 2, 16, aimbotbuffer, true, true, true, ImColor(255, 255, 255, 255), c_renderer::text_normal);
+    */
+    if (true) {
+        int x = drawsection.predx;
+        int y = drawsection.predy;
+
+        static Vector3 center(s_width / 2, s_height / 2, 0);
+
+
+
+        if (center.Distance(Vector3(x, y, 0)) < 125.f)
+        {
+            if (drawsection.abplayer.visible) {
+                Vector3 basepos = { (float)drawsection.abplayer._basex,	(float)drawsection.abplayer._basey,0 };
+
+                Vector3 fforepos = { (float)drawsection.abplayer._15x , (float)drawsection.abplayer._15y,0 };// GetBoneWithRotation(mesh, fforehead);
+                Vector3 fHeadpos = { (float)drawsection.abplayer._6x , (float)drawsection.abplayer._6y,0 };//GetBoneWithRotation(mesh, fHead);
+                Vector3 fneck_01pos = { (float)drawsection.abplayer._5x , (float)drawsection.abplayer._5y,0 };//GetBoneWithRotation(mesh, fneck_01);
+
+                Vector3 fupperarm_r_pos = { (float)drawsection.abplayer._115x , (float)drawsection.abplayer._115y,0 };//GetBoneWithRotation(mesh, fupperarm_r);
+                Vector3 flowerarm_r_pos = { (float)drawsection.abplayer._116x , (float)drawsection.abplayer._116y,0 };// GetBoneWithRotation(mesh, flowerarm_r);
+                Vector3 fhand_r_pos = { (float)drawsection.abplayer._117x , (float)drawsection.abplayer._117y,0 };//GetBoneWithRotation(mesh, fhand_r);
+
+                Vector3 fupperarm_l_pos = { (float)drawsection.abplayer._88x , (float)drawsection.abplayer._88y,0 };//GetBoneWithRotation(mesh, fupperarm_l);
+                Vector3 flowerarm_l_pos = { (float)drawsection.abplayer._89x , (float)drawsection.abplayer._89y,0 };//GetBoneWithRotation(mesh, flowerarm_l);
+                Vector3 fhand_l_pos = { (float)drawsection.abplayer._90x , (float)drawsection.abplayer._90y,0 };//GetBoneWithRotation(mesh, fhand_l);
+
+                Vector3 fpelvis_pos = { (float)drawsection.abplayer._1x , (float)drawsection.abplayer._1y,0 };//GetBoneWithRotation(mesh, fpelvis);
+                Vector3 fspine_02_pos = { (float)drawsection.abplayer._3x,  (float)drawsection.abplayer._3y, 0 };// GetBoneWithRotation(mesh, fspine_02);
+                Vector3 fspine_01_pos = { (float)drawsection.abplayer._2x,  (float)drawsection.abplayer._2y, 0 };//GetBoneWithRotation(mesh, fspine_01);
+
+                Vector3 fthigh_r_pos = { (float)drawsection.abplayer._174x,  (float)drawsection.abplayer._174y, 0 };//GetBoneWithRotation(mesh, fthigh_r);
+                Vector3 fcalf_r_pos = { (float)drawsection.abplayer._175x,  (float)drawsection.abplayer._175y, 0 };//GetBoneWithRotation(mesh, fcalf_r);
+                Vector3 ffoot_r_pos = { (float)drawsection.abplayer._176x,  (float)drawsection.abplayer._176y, 0 };//GetBoneWithRotation(mesh, ffoot_r);
+
+                Vector3 fthigh_l_pos = { (float)drawsection.abplayer._168x,  (float)drawsection.abplayer._168y, 0 };//GetBoneWithRotation(mesh, fthigh_l);
+                Vector3 fcalf_l_pos = { (float)drawsection.abplayer._169x,  (float)drawsection.abplayer._169y, 0 };//GetBoneWithRotation(mesh, fcalf_l);
+                Vector3 ffoot_l_pos = { (float)drawsection.abplayer._170x,  (float)drawsection.abplayer._170y, 0 };//GetBoneWithRotation(mesh, ffoot_l);
+
+                //255 * 0, 0xa3, 0xd2, (int)255 * 1
+                int r = 0;
+                int g = 0xa3;
+                int b = 0xd2;
+                int a = 200;
+
+                render.draw_line(fforepos.x, fforepos.y, fHeadpos.x, fHeadpos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(fHeadpos.x, fHeadpos.y, fneck_01pos.x, fneck_01pos.y, ImColor(r, g, b, a), 1.0f);
+
+                render.draw_line(fneck_01pos.x, fneck_01pos.y, fupperarm_r_pos.x, fupperarm_r_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(fupperarm_r_pos.x, fupperarm_r_pos.y, flowerarm_r_pos.x, flowerarm_r_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(flowerarm_r_pos.x, flowerarm_r_pos.y, fhand_r_pos.x, fhand_r_pos.y, 1.0f);
+
+                render.draw_line(fneck_01pos.x, fneck_01pos.y, fupperarm_l_pos.x, fupperarm_l_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(fupperarm_l_pos.x, fupperarm_l_pos.y, flowerarm_l_pos.x, flowerarm_l_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(flowerarm_l_pos.x, flowerarm_l_pos.y, fhand_l_pos.x, fhand_l_pos.y, ImColor(r, g, b, a), 1.0f);
+
+                render.draw_line(fneck_01pos.x, fneck_01pos.y, fspine_02_pos.x, fspine_02_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(fspine_02_pos.x, fspine_02_pos.y, fspine_01_pos.x, fspine_01_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(fspine_01_pos.x, fspine_01_pos.y, fpelvis_pos.x, fpelvis_pos.y, ImColor(r, g, b, a), 1.0f);
+
+                render.draw_line(fpelvis_pos.x, fpelvis_pos.y, fthigh_r_pos.x, fthigh_r_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(fthigh_r_pos.x, fthigh_r_pos.y, fcalf_r_pos.x, fcalf_r_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(fcalf_r_pos.x, fcalf_r_pos.y, ffoot_r_pos.x, ffoot_r_pos.y, ImColor(r, g, b, a), 1.0f);
+
+                render.draw_line(fpelvis_pos.x, fpelvis_pos.y, fthigh_l_pos.x, fthigh_l_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(fthigh_l_pos.x, fthigh_l_pos.y, fcalf_l_pos.x, fcalf_l_pos.y, ImColor(r, g, b, a), 1.0f);
+                render.draw_line(fcalf_l_pos.x, fcalf_l_pos.y, ffoot_l_pos.x, ffoot_l_pos.y, ImColor(r, g, b, a), 1.0f);
+            }
+
+
+
+            render.draw_line(x - 2, y - 2, x - 2, y + 2,
+                ImColor(255 * 0, 0xa3, 0xd2, (int)(255 * 1)),
+                1.f);
+            render.draw_line(x - 2, y - 2, x + 2, y - 2,
+                ImColor(255 * 0, 0xa3, 0xd2, (int)(255 * 1)),
+                1.f);
+            render.draw_line(x + 2, y - 2, x + 2, y + 2,
+                ImColor(255 * 0, 0xa3, 0xd2, (int)(255 * 1)),
+                1.f);
+            render.draw_line(x - 2, y + 2, x + 3, y + 2,
+                ImColor(255 * 0, 0xa3, 0xd2, (int)255 * 1),
+                1.f);
+        }
+        
+    }
+
+    if (true) {
+
+        int fpscount = (int)ImGui::GetIO().Framerate;
+        static char fpsbuffer[1024];
+        sprintf(fpsbuffer, "Fps : %d\0", fpscount);
+        render.draw_text(s_width - 105, 85 + 17, fpsbuffer, true, true, false, ImColor(255, 255, 255, 255), c_renderer::text_normal);
+
+    }
 }
 
 

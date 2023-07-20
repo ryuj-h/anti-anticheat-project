@@ -22,7 +22,8 @@ void c_renderer::init(LPDIRECT3DDEVICE9 device)
 	ImGui_ImplDX9_Init(device);
 
 	if (!m_default)
-		m_default = ImGui::GetIO().Fonts->AddFontDefault();
+		m_default = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\Arial.ttf", 12.0f, nullptr, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
+		//m_default = ImGui::GetIO().Fonts->AddFontDefault();
 	/* ImGui::GetIO().Fonts->AddFontFromFileTTF("path_to_font", 14.0f, nullptr, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic()); */
 }
 
@@ -68,8 +69,20 @@ void c_renderer::end_draw(void)
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 }
 
-void c_renderer::draw_text(float_t x, float_t y, const char* text, bool outlined, ImColor color, e_flags flags, ImFont* font, ...)
+void c_renderer::draw_text(float_t x, float_t y, const char* text, bool outlined,bool centered,bool background, ImColor color, e_flags flags, ImFont* font, ...)
 {
+	if (centered) {
+		auto textWidth = ImGui::CalcTextSize(text).x;
+
+		x = x - textWidth / 2.f;
+	}
+	//draw_rect
+	if (background) {
+		auto textWidth = ImGui::CalcTextSize(text).x;
+		auto textHeight = ImGui::CalcTextSize(text).y;
+		draw_rect(x, y, textWidth, textHeight, ImColor(0.f, 0.f, 0.f, 0.3f), c_renderer::rect_filled);
+	}
+
 	switch (flags)
 	{
 	case c_renderer::text_normal:

@@ -63,10 +63,17 @@ void App::Tick()
 	}
 
 
+
+	data["ab"] = (int)aimbot;
 	data["lat"] = connectiontimePlus;
 
 
+	int aimspeedint = Setaimspeed * 10;
 
+	data["aimspeed"] = aimspeedint;
+
+	data["predx"] = predx;
+	data["predy"] = predy;
 
 	/*while (true) {
 		ULONG64 tickcount2 = GetTickCount64();
@@ -77,7 +84,10 @@ void App::Tick()
 	key_ctrl = dr->GetKeystate(VK_LCONTROL);
 	key_O = dr->GetKeystate(0x4F);
 	key_P = dr->GetKeystate(0x50);
-	
+	key_numplus = dr->GetKeystate(VK_ADD);
+	key_numminus = dr->GetKeystate(VK_SUBTRACT);
+	key_insert = dr->GetKeystate(VK_INSERT);
+
 	if (key_ctrl && key_O) {
 		connectiontimePlus--;
 		if (connectiontimePlus < 0)
@@ -88,6 +98,24 @@ void App::Tick()
 		connectiontimePlus++;
 		if (connectiontimePlus > 100)
 			connectiontimePlus = 100;
+		Sleep(100);
+	}
+
+	if (key_numminus) {
+		Setaimspeed = Setaimspeed - 0.1;
+		if (Setaimspeed < 1.0f)
+			Setaimspeed = 1.0f;
+		Sleep(100);
+	}
+	else if (key_numplus) {
+		Setaimspeed = Setaimspeed + 0.1;
+		if (Setaimspeed > 100.f)
+			Setaimspeed = 100.f;
+		Sleep(100);
+	}
+
+	if (key_insert) {
+		aimbot = !aimbot;
 		Sleep(100);
 	}
 
@@ -451,7 +479,7 @@ void App::snapShotPlayers()
 unsigned int App::decryptid(const unsigned int& v13)
 {
 	unsigned int decid = 0;
-	decid = __ROR4__(v13 ^ 0x1A018DF6, 10) ^ (__ROR4__(v13 ^ 0x1A018DF6, 10) << 16) ^ 0xF7978B7A;
+	decid = __ROL4__(v13 ^ 0xC316801E, 6) ^ (__ROL4__(v13 ^ 0xC316801E, 6) << 16) ^ 0x843BF9E;
 	//__ROL4__(v13 ^ 0x3D4D27BF, 5) ^ (__ROL4__(v13 ^ 0x3D4D27BF, 5) << 16) ^ 0xF21AA6A6;
 	return decid;
 }
@@ -583,6 +611,32 @@ Vector3 App::WorldToScreen(Vector3 WorldLocation)
 	return Screenlocation;
 }
 
+
+Vector3 App::ScreenToWorld(float screenX, float screenY) {
+	Vector3 Worldlocation = Vector3(0, 0, 0);
+
+	auto POV = CameraCache.POV;
+	Vector3 Rotation = POV.Rotation; // FRotator
+	DDMATRIX tempMatrix = Matrix(Rotation); // Matrix
+
+
+	Vector3 vAxisX, vAxisY, vAxisZ;
+	vAxisX = Vector3(tempMatrix.m[0][0], tempMatrix.m[0][1], tempMatrix.m[0][2]);
+	vAxisY = Vector3(tempMatrix.m[1][0], tempMatrix.m[1][1], tempMatrix.m[1][2]);
+	vAxisZ = Vector3(tempMatrix.m[2][0], tempMatrix.m[2][1], tempMatrix.m[2][2]);
+
+
+	float w = s_width;
+	float h = s_height;
+
+	Vector3 v;
+	v.x = (((2.0f * screenX) / w) - 1) / tempMatrix._11;
+	v.y = -(((2.0f * screenY) / h) - 1) / tempMatrix._22;
+	v.z = 1.0f;
+
+	return Worldlocation;
+}
+
 DDMATRIX App::MatrixMultiplication(DDMATRIX pM1, DDMATRIX pM2)
 {
 	DDMATRIX pOut;
@@ -712,9 +766,14 @@ void App::Playerloop(json& data)
 
 		
 		dr->RPM(g_pid, &recoil, AnimScript + orecoil_ads_rotation_cp, 12);
+		 
+		//(ScreenCenterX / tanf(FovAngle * (float)M_PI / 360.f))
+		//Vector3 recoilcalc = recoil * (s_width / 2.0f / tanf(CameraCache.POV.FOV * (float)M_PI / 360.f));
+			//CameraCache.POV.FOV;
+		//cout << "read recoil : x : " << recoilcalc.x << "	y : " << recoilcalc.y << "	z : " << recoilcalc.z << endl;
 
 		float lla;
-		float lra;
+		float lra; 
 
 		dr->RPM(g_pid, &lla, AnimScript + olean_left_alpha_cp, 4);
 		dr->RPM(g_pid, &lra, AnimScript + olean_right_alpha_cp, 4);
@@ -729,6 +788,33 @@ void App::Playerloop(json& data)
 		sway.y += recoil.y;
 		sway.z += recoil.z;
 
+		Vector3 leftthumb = GetBoneWithRotation(playermesh, fforehead);
+		Vector3 foreheadwts = WorldToScreen(leftthumb);
+			//thumb_01_l
+
+
+
+		//Vector3 thumbposwts = WorldToScreenAim(leftthumb, sway);//WorldToScreen(PredictedPos);
+		//Vector3 thumbposwts2 = WorldToScreen(leftthumb);//WorldToScreen(PredictedPos);
+		//Vector3 recoilscreen = thumbposwts;
+
+		//recoilscreen = recoilscreen * 0.6;
+		//dr->mouse_event(recoilscreen.x, recoilscreen.y, 0);
+
+		//Vector3 frontpos100 = CameraCache.POV.Location + CameraCache.POV.Rotation * 100.f;
+		//Vector3 frontpos1002 = CameraCache.POV.Location + (CameraCache.POV.Rotation + recoil) * 100.f;
+		//cout << "frontpos100 : x : " << frontpos100.x << "	y : " << frontpos100.y << "	z : " << frontpos100.z << endl;
+		//Vector3 thumbposwts = WorldToScreenAim(frontpos100, (CameraCache.POV.Rotation + recoil));//WorldToScreen(PredictedPos);
+		//Vector3 thumbposwts = WorldToScreen(frontpos100);//WorldToScreen(PredictedPos);
+		//Vector3 thumbposwts2 = WorldToScreen(frontpos1002);//WorldToScreen(PredictedPos);
+		//Vector3 recoilscreen = thumbposwts2 - thumbposwts;
+		//DrawLine(foreheadwts.x, foreheadwts.y, thumbposwts.y, thumbposwts.y, 1, 1, 1, 1, 1);
+		//cout << "recoilscreen : x : " << frontpos100.x << "	y : " << frontpos100.y << "	z : " << frontpos100.z << endl;
+		//cout << "frontpos100 : x : " << frontpos100.x << "	y : " << frontpos100.y << "	z : " << frontpos100.z << endl;
+
+
+
+
 		uint64_t pWeaponProcessor;
 		dr->RPM(g_pid, &pWeaponProcessor, playerentity + oWeaponProcessor, 8);
 
@@ -738,6 +824,7 @@ void App::Playerloop(json& data)
 		char currentWeaponIdxtemp = 0;
 		dr->RPM(g_pid, &currentWeaponIdxtemp, pWeaponProcessor + oCurrWeapoinIdx, sizeof(char));
 		int currentWeaponIdx = currentWeaponIdxtemp;
+
 
 		uint64_t pNowWeapon;
 		dr->RPM(g_pid, &pNowWeapon, pEquippedWeapons + 8 * currentWeaponIdx, 8);
@@ -767,7 +854,7 @@ void App::Playerloop(json& data)
 		Vector3 ReplicateMovement;
 		dr->RPM(g_pid, &ReplicateMovement, LastVehiclePawn + oReplicatedMovement, 12);
 		//oReplicatedMovement
-		if (false){//debug
+		if (true){//debug
 			system("cls");
 			std::cout << "[+] pWeaponProcessor: " << hex << pWeaponProcessor << endl;
 			std::cout << "[+] pEquippedWeapons: " << hex << pEquippedWeapons << endl;
@@ -822,7 +909,7 @@ void App::Playerloop(json& data)
 	AimbotPredicScreenPos = { 0,0,0 };
 	float distancecehck = 999999;
 
-	float aimspeed = 4.5f;
+	float aimspeed = Setaimspeed;
 	float minaimspeed = 3.0f;
 
 	int calx;
@@ -844,7 +931,8 @@ void App::Playerloop(json& data)
 		dr->RPM(g_pid, &entityhealth, entity + oHealth, 4);
 		if (entityhealth == 0.f || entityhealth < 0)
 			continue;
-			
+		
+		int entityhealthint = entityhealth;
 
 		uint64_t entityrootcomp;
 		dr->RPM(g_pid, &entityrootcomp, entity + oActor_Rootcomp, 8);
@@ -986,7 +1074,7 @@ void App::Playerloop(json& data)
 
 
 
-		EnemyDataPast* pastenemydata = nullptr;//200ms 전의 상태 데이터
+		EnemyDataPast* pastenemydata = nullptr;//100ms 전의 상태 데이터
 		if (g_EnemyPastInfo.find(entity) == g_EnemyPastInfo.end()) {
 			g_EnemyPastInfo.emplace(entity, new std::queue<EnemyDataPast*>());
 		}
@@ -1000,7 +1088,7 @@ void App::Playerloop(json& data)
 				//사용할 정보를 pop
 				while (true) {
 					pastenemydata = pastqueue->front();
-					if (currtick - pastenemydata->Ticktime >= 200) {
+					if (currtick - pastenemydata->Ticktime >= 100) {
 						delete(pastenemydata);
 						pastqueue->pop();
 					}
@@ -1066,26 +1154,34 @@ void App::Playerloop(json& data)
 			Aiminglocation = GetBoneWithRotation(mesh, aiming_position);
 			*/
 
+			
 
 			if (pastenemydata) {
+				Vector3 Velocity2 = (baseposition - pastenemydata->Position) * 10.f;
 				float TravelTime = distance / playerGunSpeed;
 				float BulletDrop = 0;
 
 				Vector3 PredictedPos{ 0, 0, 0 };
-				PredictedPos.x = pastenemydata->AimbotWorldPos.x + (Velocity.x * (TravelTime + 0.2f));
-				PredictedPos.y = pastenemydata->AimbotWorldPos.y + (Velocity.y * (TravelTime + 0.2f));
+				PredictedPos.x = pastenemydata->AimbotWorldPos.x + (Velocity2.x * (TravelTime + 0.1f));
+				PredictedPos.y = pastenemydata->AimbotWorldPos.y + (Velocity2.y * (TravelTime + 0.1f));
 				PredictedPos.z = pastenemydata->AimbotWorldPos.z;
 				//PredictedPos.z = Aiminglocation.z + (Velocity.z * flTime) + fabs(BulletDrop); //+ (9.80665f * 100 / 2 * flTime * flTime);
 
 				Vector3 headposwts = WorldToScreenAim(PredictedPos, sway);//WorldToScreen(PredictedPos);
-				float distance1 = SCenter.Distance(headposwts);//Scenter.Distance(headposwts);
+				float distance2 = SCenter.Distance(headposwts);//Scenter.Distance(headposwts);
+
+				if (distance2 < Aimsize) {
+					//headposwts.y = SCenter.y;
+					//headposwts.z = SCenter.z;
+					float distance1 = SCenter.Distance(headposwts);//Scenter.Distance(headposwts);
 
 
-				if (distance1 < distancecehck) {
-					AimbotPredicWorldPos = PredictedPos;
-					AimbotPredicScreenPos = headposwts;
-					distancecehck = distance1;
-					AimbotTartgetExist = true;
+					if (distance1 < distancecehck) {
+						AimbotPredicWorldPos = PredictedPos;
+						AimbotPredicScreenPos = headposwts;
+						distancecehck = distance1;
+						AimbotTartgetExist = true;
+					}
 				}
 			}
 
@@ -1096,7 +1192,7 @@ void App::Playerloop(json& data)
 			Vector3 PredictedPos{ 0, 0, 0 };
 			PredictedPos.x = Aiminglocation.x + (Velocity.x * TravelTime);
 			PredictedPos.y = Aiminglocation.y + (Velocity.y * TravelTime);
-			PredictedPos.z = Aiminglocation.z;
+			PredictedPos.z = Aimingloca	tion.z;
 			//PredictedPos.z = Aiminglocation.z + (Velocity.z * flTime) + fabs(BulletDrop); //+ (9.80665f * 100 / 2 * flTime * flTime);
 
 			Vector3 headposwts = WorldToScreenAim(PredictedPos, sway);//WorldToScreen(PredictedPos);
@@ -1151,10 +1247,11 @@ void App::Playerloop(json& data)
 
 
 
-
+		//aimbot
 		if (IsOnScreen) {
 			drawsection.playernum++;
 			data["Players"].emplace_back(json::object({
+					{"hp", (int)entityhealthint},
 					{"minix", (int)minix},
 					{"miniy", (int)miniy},
 					{"vis", (int)entityvis},
@@ -1206,11 +1303,17 @@ void App::Playerloop(json& data)
 	}
 
 
+	predx = -1;
+	predy = -1;
 	if (AimbotTartgetExist){
 
 		Vector3 AimpotPredwts = WorldToScreen(AimbotPredicWorldPos);
-		DrawLine(AimpotPredwts.x - 1, AimpotPredwts.y - 1, AimpotPredwts.x + 1, AimpotPredwts.y + 1, 3, 1, 1, 1, 1);
-		DrawLine(AimpotPredwts.x + 1, AimpotPredwts.y - 1, AimpotPredwts.x - 1, AimpotPredwts.y + 1, 3, 1, 1, 1, 1);
+
+		predx = AimpotPredwts.x;
+		predy = AimpotPredwts.y;
+
+		//DrawLine(AimpotPredwts.x - 1, AimpotPredwts.y - 1, AimpotPredwts.x + 1, AimpotPredwts.y + 1, 3, 1, 1, 1, 1);
+		//DrawLine(AimpotPredwts.x + 1, AimpotPredwts.y - 1, AimpotPredwts.x - 1, AimpotPredwts.y + 1, 3, 1, 1, 1, 1);
 		
 
 		if (playerCurrGunIdx == 0xffffffff)
@@ -1293,7 +1396,9 @@ void App::Playerloop(json& data)
 
 			}
 			TargetY = 0;
-			dr->mouse_event(TargetX, TargetY, 0);
+
+			if (aimbot)
+				dr->mouse_event(TargetX, TargetY, 0);
 		}
 	}
 }

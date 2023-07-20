@@ -1,31 +1,32 @@
 #pragma once
 
-#define ida_base 0x00007FF7A0BB0000
+#define ida_base 0x0007FF69ED60000
 
-#define ft_decrypt 0x7FF7A87FA628 - ida_base
+#define ft_decrypt 0x7FF6A6AFDB28 - ida_base
 //48 8B 5C 24 ? 48 89 5C 24 ? 41
 
-#define o_UWorld 0x7FF7A9E28F60 - ida_base
+#define o_UWorld 0x7FF6A81235F0 - ida_base
 //E8 ? ? ? ? 48 3B F0 75 15
 
 //48 8D 15 ? ? ? ? E8 ? ? ? ? 48 8B F0 49
+//3B 81 ? ? ? ? 0F 8D ? ? ? ? 48 8B 91 ? ? ? ? 48
 
-#define o_Level 0x50
+#define o_Level 0x918
 //E8 ? ? ? ? 84 C0 74 11 40 B6 
 //E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 45 32 FF 45 
 
-#define o_Actor 0x230
+#define o_Actor 0x1D0
 //48 89 5C 24 ? 57 48 83 EC 30 83 3D ? ? ? ? ? 48 
 //mov     rdx, [rcx + 220h]
 //여기서 오프셋 획득하고 핵스레이 돌림
 //첫번째 if문에 있는거가 복호화 함수
 
-#define o_GameInstance 0x338
+#define o_GameInstance 0x200
 //E8 ? ? ? ? 48 89 44 24 ? 48 8B C8 E8 ? ? ? ? 48 8D
 //E8 ? ? ? ? 48 89 45 10 48 8D 58
 
 
-#define o_LocalPlayerArray 0xB0
+#define o_LocalPlayerArray 0xE8
 /*
 75 08 49 8B CC E8 ? ? ? ? 44
 
@@ -41,7 +42,7 @@ LABEL_98:
 #define o_PlayerController 0x38    
 //E8 ? ? ? ? 84 C0 74 3F 8B 84 
 
-#define o_Gnames 0x7FF7AA00D758 - ida_base
+#define o_Gnames 0x7FF6A8308F28 - ida_base
 //48 8B 0D ? ? ? ? 4C 8B C9 
 
 //E8 ? ? ? ? 85 C0 0F 85 ? ? ? ? 48 8D 4D E8 
@@ -72,18 +73,20 @@ if ( !(unsigned __int8)sub_7FF71C65C51C(*(_QWORD *)(v1 + 456))
 
 //41 B0 01 48 8B 97 ? ? ? ? 49 
 
-#define o_GNamesChunkSize 0x3EF4
+#define o_GNamesChunkSize 0x3F40
 //c1 ? ? 8b ? c1 ? 1f 03 ? 69 ? ? ? ? ? 44 2b f8
 
-#define oActor_ID 0x8  
+#define oActor_ID 0xC  
 //E8 ? ? ? ? 90 88 9D
 //E8 ? ? ? ? 90 49 8B D4 48 8D 8D 
 
-#define oRootcompPosition 0x220 
+//앞에있는거 작은거
+
+#define oRootcompPosition 0x2C0  
 //0F 10 88 ? ? ? 00 0f 28 c1
 
 
-#define oRootcompRotation 0x290 // no upd
+#define oRootcompRotation 0x260 // no upd 
 /*
 F2 41 0F 10 81 ?? ?? 00 00
 조온나나오는애들
@@ -113,7 +116,7 @@ line 77
     }
 */
 
-#define oMesh 0x458
+#define oMesh 0x530
 //sdk
 // ACharacter
 // Mesh
@@ -122,8 +125,10 @@ line 77
 // 이거 먼저 확인
 //48 8B 93 ? ? ? ? 49 8B CE E8 ? ? ? ? 48 8B CB 
 //48 8B 93 ? ? ? ? 48 8B CE E8 ? ? ? ? 48 8B CB 
-// 
+// 48 8B 93 ? ? ? ? 48 8B CE E8 ? ? ? ? 48 8B CB
 //49 8B 96 ? ? ? ? 48 8B CE E8 ? ? ? ? 49 8B CE 
+//48 8B 96 ? ? ? ? 49 8B CE E8 ? ? ? ? 48 8B CE
+//49 8B 97 ? ? ? ? 48 8B CE E8 ? ? ? ? 49 
 
 /*
 48 8B C4 88 50 10 53
@@ -149,12 +154,12 @@ if ( result )
 //TslGame.exe+2AC385:
 //TslGame.exe+2579D9:
 
-#define oComponentToWorld 0x210//0x360 //둘중에 낮은거  
+#define oComponentToWorld 0x2B0//0x360 //둘중에 낮은거    
 //0F 10 99 ? ? ? ? 48 8B C2 
 
 
 
-#define o_Cameramanager 0x4A8
+#define o_Cameramanager 0x4B8 
 //APlayerController
 // PlayerCameraManager
 //48 8B B9 ? ? ? ? 48 85 FF 74 4A 
@@ -169,11 +174,12 @@ LODWORD(v1) = *(_DWORD *)(v1 + 8) >> 29;
         if ( v5 )
         {
 */
-#define o_CameraCache 0x16C0+ 0x10
+
+#define o_CameraCache 0x1710+ 0x10
 //APlayerCameraManager
 //CameraCache
 
-#define oViewTarget 0x1130//cameramanager + // ?????
+#define oViewTarget 0x1040//cameramanager + // ?????
 //SDK - Class Engine.PlayerCameraManager
 // ViewTarget
 //48 8B 93 ? ? ? ? 0F 28 D6 48 89
@@ -183,8 +189,20 @@ LODWORD(v1) = *(_DWORD *)(v1 + 8) >> 29;
 
 //48 89 87 ? ? ? ? 48 8D 56 10 48 8D 8F
 
-#define o_camera_location  0x464//0x1C64//o_CameraCache + 0x594//0x1C64//
+#define o_camera_location  0x1C08//0x1C64//o_CameraCache + 0x594//0x1C64//
 //F2 0F 10 81 ? ? ? ? F2 41 0F 11 07 
+/*
+
+v11 = *(_QWORD *)(sub_7FF67222F2EC(v10, v4) + 1200);
+  *(_QWORD *)v7 = *(_QWORD *)(v11 + 0xA58); <<<<<<<location
+  *(_DWORD *)(v7 + 8) = *(_DWORD *)(v11 + 0xA60);
+  *(_QWORD *)v6 = *(_QWORD *)(v11 + 0xA64); <<<<<<<<Rotation 
+  *(_DWORD *)(v6 + 8) = *(_DWORD *)(v11 + 0xA6C);
+
+
+*/
+// 
+// 
 //Offset["FMinimalViewInfo"].push_back("Location");
 
 /*
@@ -224,7 +242,7 @@ v4 = *(_QWORD *)(a1 + 480);
 
 */
 
-#define o_camera_ratation 0xA00//0x1C40//o_CameraCache + 0x570 //0x1C40
+#define o_camera_ratation 0x1664//0x1C40//o_CameraCache + 0x570 //0x1C40
 //Offset["FMinimalViewInfo"].push_back("Rotation");
 //48 8B 88 ? ? ? ? F2 0F 10 81 ? ? ? ? F2 0F 11 44 
 //F3 0F 10 91 ? ? ? ? F3 0F 5C 97
@@ -237,21 +255,22 @@ v4 = *(_QWORD *)(a1 + 480);
 */
 
 
-#define o_camera_fov 0x0A10//o_CameraCache + 0x58C//420h
+#define o_camera_fov 0x1C04//0x9D4//o_CameraCache + 0x58C//9D4h
 //Offset["FMinimalViewInfo"].push_back("FOV");
 //f3 0f 10 81 ? ? ? ? 0f ? ? ? ? ? ? 77 ? f3 0f 10 81 ? ? ? ?
 
 //F3 0f 10 81 ? ? ? ? 0f ? ? ? ? ? 77 ? f3 0f 10 81 ? ? ? ?
 
 
-#define oPawn 0x488//0x488
+#define oPawn 0x498//0x488
 //APlayerController
 //Engine.PlayerController
 //AcknowledgedPawn
 //83 65 ? ? 48 8b 8f ? ? 00 00 48 83
+//83 A4 24 ? ? ? ? ? 48 8B 8F ? ? ? ? 4C
 //Force Feedback - Enabled: %s LL: %.2f LS: %.2f RL: %.2f RS: %.2f
 
-#define oActor_Rootcomp 0x340
+#define oActor_Rootcomp 0x378
 //sdk
 // AActor
 // RootComponent
@@ -259,29 +278,29 @@ v4 = *(_QWORD *)(a1 + 480);
 //E8 ? ? ? ? 4C 8B F0 48 8B D0 48 8B CB E8 ? ? ? ? 48 
 
 
-#define oTeam 0x1AE8 
+#define oTeam 0x2120
 //TslGame.TslCharacter
 //LastTeamNum
 //8B BA ? ? ? ? 83 FF 
 
 //E8 ? ? ? ? 8B F0 83 F8 FF 75 0C 
 
-#define oLastSubmitTime 0x768//0x0778 
-#define oLastRenderTimeOnScreen 0x770//0x0780 
+#define oLastSubmitTime 0x768//0x768//0x0778  
+#define oLastRenderTimeOnScreen 0x770//0x770//0x0780  
 
-#define oLastRenderingTime 0x76C//0x77C 
+#define oLastRenderingTime 0x76c//0x76C//0x77C  
 //Engine.PrimitiveComponent
 //UPrimitiveComponent
 //LastRenderTime
 //F3 0F 10 83 ? ? ? ? 0F 2F F0 73
 
 
-#define oHealth  0x870
+#define oHealth  0x878 
 //E8 ? ? ? ? 84 C0 75 0A B8 ? ? ? ? E9 ? ? ? ? 48
 
-#define oGroggyHealth  0x1BEC
+#define oGroggyHealth 0x1414   
 
-#define oMeshAnimScriptInstance 0xC80//0x0C90  
+#define oMeshAnimScriptInstance 0x0C80//0x0C90   
 //USkeletalMeshComponent
 //Engine.SkeletalMeshComponent
 //AnimScriptInstance
@@ -302,10 +321,17 @@ v1 = *(_QWORD *)(a1 + 0x558);
 
   sub_7FF6F4B06CB0(v1)
 
+
+
+    v1 = *(_QWORD *)(a1 + 0x540);
+  if ( !v1 )
+    goto LABEL_16;
+  v2 = *(_QWORD *)(v1 + 0xC80);<<<<
+
 */
 
 
-#define ocontrol_rotation_cp 0x774 
+#define ocontrol_rotation_cp 0x774 //or 77c       
 //TslGame.TslAnimInstance
 //ControlRotation_CP
 //88 8B ? ? ? ? 0F 57
@@ -320,9 +346,20 @@ v1 = *(_QWORD *)(a1 + 0x558);
 //TslGame.exe+9B6515
 
 //F3 0F 10 83 ? ? ? ? F3 0F 5C 83 ? ? ? ? F3 0F 5C 9B ? ? ? ? F3 0F 10 93
+/*
+mov     [rbx+0E0Eh], cl
+.text:00007FF6722B14DB                 xorps   xmm1, xmm1
+.text:00007FF6722B14DE                 movss   xmm3, dword ptr [rbx+76Ch] <<<<<<<<<<<<<<<<<<<<
+.text:00007FF6722B14E6                 movss   xmm0, dword ptr [rbx+774h]
+.text:00007FF6722B14EE                 subss   xmm0, dword ptr [rbx+0E20h]
+.text:00007FF6722B14F6                 subss   xmm3, dword ptr [rbx+0E18h]
+.text:00007FF6722B14FE                 movss   xmm2, dword ptr [rbx+770h]
+.text:00007FF6722B1506                 subss   xmm2, dword ptr [rbx+0E1Ch]
 
 
-#define orecoil_ads_rotation_cp  0x9cc
+*/
+
+#define orecoil_ads_rotation_cp  0x9cc        
 //TslGame.TslAnimInstance
 //RecoilADSRotation_CP
 //F2 0F 11 8B ? ? ? ? F3 0F 11 83 
@@ -360,7 +397,7 @@ F3 0F 5C 8B ? ? ? ? 48 8D
 
 
 
-#define olean_left_alpha_cp 0x0DE4   
+#define olean_left_alpha_cp 0x0DE4          
 //TslGame.TslAnimInstance
 //LeanLeftAlpha_CP
 //F3 44 0F 11 BB ? ? ? ? 45 
@@ -371,7 +408,7 @@ F3 0F 5C 8B ? ? ? ? 48 8D
 //F3 0F 11 83 ? ? ? ? 40 84 ED 74 06
 
 
-#define olean_right_alpha_cp olean_left_alpha_cp + 0x4    
+#define olean_right_alpha_cp olean_left_alpha_cp + 0x4      
 //TslGame.TslAnimInstance
 //LeanRightAlpha_CP
 //F3 0F 10 83 ? ? ? ? 41 0F 28 D3 E8 ? ? ? ? F3
@@ -381,12 +418,8 @@ F3 0F 5C 8B ? ? ? ? 48 8D
 
 
 
-//여기까지 했음
 
-
-
-
-#define oWeaponProcessor 0x888 
+#define oWeaponProcessor 0x890  
 //TslGame.TslCharacter
 // WeaponProcessor
 //48 8B 89 ? ? ? ? B2 01 E8 ? ? ? ? 45 33 C0 8B D0 48
@@ -442,7 +475,7 @@ if ( *(_BYTE *)(v1 + 1496) )
 */
 
 
-#define oWeaponTrajectoryData 0x1000 
+#define oWeaponTrajectoryData 0x1000  
 //TslGame.TslWeapon_Trajectory
 // WeaponTrajectoryData
 //0F 84 ? ? ? ? 48 8B 83 ? ? ? ? F3 0F 10 88 
@@ -532,7 +565,9 @@ if ( *(_BYTE *)(v1 + 1496) )
 
 
 
-#define oCurrWeapoinIdx 0x309
+#define oCurrWeapoinIdx 0x309//0x2F9//0x309    
+
+//0F BE 81 ? ? ? ? C3 0F BE 81 ? ? ? ? C3 83
 
 /*
 E8 ? ? ? ? 84 C0 74 04 B0 02 EB 11
@@ -641,7 +676,8 @@ signed __int64 __fastcall sub_7FF75F8DC950(__int64 a1, char a2)
 */
 
 
-#define oVehicleRiderComponent 0x1CC8  
+//여기부터 안쓴다 걍 개같네
+#define oVehicleRiderComponent 0x1C80  
 //TslGame.TslCharacter
 //VehicleRiderComponent
 //48 8B 89 ? ? ? ? 48 8D 54 24 ? E8 ? ? ? ? 48 8B 54
@@ -654,7 +690,7 @@ signed __int64 __fastcall sub_7FF75F8DC950(__int64 a1, char a2)
 //E8 ? ? ? ? 84 C0 74 14 48 8B CB E8 ? ? ? ? 48 8B D0 
 
 
-#define oLastVehiclePawn 0x260        
+#define oLastVehiclePawn 0x260         
 //TslGame.VehicleRiderComponent
 // LastVehiclePawn
 //48 3B AE ? ? ? ? 74 
@@ -711,8 +747,6 @@ __int64 __fastcall sub_7FF6F2166FB0(__int64 a1, __int64 a2, __int64 a3, __int64 
 
 */
 
-
-//여기부터 안쓴다 걍 개같네
 #define oComponentVelocity 0x2A0 //4d0
 //Engine.SceneComponent
 // ComponentVelocity
@@ -780,10 +814,36 @@ F5
 
 */
 
+//아직 안쓰는것들
+#define oCurrBulletCount 0xA10 
+//SDK
+//TslGame.TslWeapon_Gun
+//CurrentAmmoData
+//5B15B0
+//61A3CE
+//0F B7 81 ? ? ? ? 89 47 48 
+/*
+jz      loc_7FF71686A491
+.text:00007FF71686A3CE 0F B7 81 08 0A 00 00                                         movzx   eax, word ptr [rcx+0A08h] <<
+.text:00007FF71686A3D5 89 47 48                                                     mov     [rdi+48h], eax
+.text:00007FF71686A3D8 0F B7 81 0A 0A 00 00                                         movzx   eax, word ptr [rcx+0A0Ah]
+*/
+
+#define oCurrGunState 0x0A50 
+//SDK
+//TslGame.TslWeapon_Gun
+//FiringModeIndex
+//83CAC3
+//48 63 91 ? ? ? ? 3B 
+/*
+48 8B 81 98 0E 00 00                                            mov     rax, [rcx+0E98h]
+.text:00007FF7E9BACAC3 48 63 91 58 0A 00 00                                            movsxd  rdx, dword ptr [rcx+0A58h] <<
+*/
+//0-단 1-점 2-연 
 
 
 
-#define oEquippedWeapons 0x2f8//oCurrWeapoinIdx - 0x11 //0x2f8  //oCurrWeapoinIdx - 0x101
+#define oEquippedWeapons 0x208//oCurrWeapoinIdx - 0x11 //0x2f8  //oCurrWeapoinIdx - 0x101
 //brute force
 //TslGame.WeaponProcessorComponent
 // EquippedWeapons
@@ -796,7 +856,7 @@ F5
 //TslGame.exe+2E9C85:
 
 
-#define oTrajectoryConfig 0x0108 
+#define oTrajectoryConfig 0x0108
 //TslGame.WeaponTrajectoryData
 //TrajectoryConfig
 //bruteforce

@@ -44,7 +44,7 @@ public:
 	};
 
 public:
-	void draw_text(float_t x, float_t y, const char* text, bool outlined,
+	void draw_text(float_t x, float_t y, const char* text, bool outlined, bool centered, bool background,
 		ImColor color = ImColor(255, 255, 255, 255), e_flags flags = text_normal, ImFont* font = nullptr, ...);
 
 	void draw_line(float_t x1, float_t y1, float_t x2, float_t y2,
