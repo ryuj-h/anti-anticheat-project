@@ -1,4 +1,4 @@
-# PUBG-anti-anticheat-project
+# anti-anticheat-project
 Toy Project for Study windows 10
 
 descryption
